@@ -1,0 +1,47 @@
+@startuml
+' UML Class Diagram for PayMate Web App
+
+' Skin parameters for better readability
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+hide empty members
+
+' Define Classes
+class User {
+  +userId: String
+  +fullName: String
+  +email: String
+  +password: String
+  +initiateTransaction(): void
+  +requestSupport(): void
+}
+
+class Transaction {
+  +transactionId: String
+  +amount: Double
+  +type: String
+  +status: String
+  +date: Date
+}
+
+' Abstract class/interface for Payment Gateway
+interface PaymentGateway {
+  +processPayment(transaction: Transaction): boolean
+}
+
+class Stripe implements PaymentGateway
+class PayPal implements PaymentGateway
+class Razorpay implements PaymentGateway
+
+class AISupportAgent {
+  +handleQuery(query: String): String
+}
+
+
+' Define Relationships
+User "1" -- "*" Transaction : "initiates"
+Transaction "1" -- "1" PaymentGateway : "processed by"
+User "1" -- "1" AISupportAgent : "interacts with"
+
+
+@enduml
