@@ -1,54 +1,21 @@
 @startuml
 !theme vibrant
-title Level 0 Data Flow Diagram for PayMate Web App
 
-' Define Actors (External Entities)
-actor "User" as User
-actor "Payment Gateway\n(Stripe, PayPal, etc.)" as PaymentGateway
-actor "AI Service\n(Google AI)" as AIService
+title Level 0 Data Flow Diagram: PayMate Web App
 
-' Define the main process (the system)
-rectangle "PayMate Web App" as PayMate {
+actor "User"
+entity "Payment Gateway" as PaymentGateway
+entity "AI Service" as AIService
 
-  ' Define Data Stores (conceptual)
-  database "User Data" as UserStore
-  database "Transaction Data" as TransactionStore
+rectangle "PayMate Web App" as PayMateSystem
 
-  ' Define Processes within the system
-  (Process Payment) as ProcessPayment
-  (Manage User Session) as ManageUserSession
-  (Provide AI Assistance) as ProvideAIAssistance
-  (View Information) as ViewInformation
-}
+User -->> PayMateSystem : User Inputs (Login, Transfer Details, Support Query)
+PayMateSystem -->> User : System Outputs (Dashboard, Confirmation, AI Response)
 
+PayMateSystem -->> PaymentGateway : Payment Processing Request
+PaymentGateway -->> PayMateSystem : Payment Status (Success/Failure)
 
-' Data Flows
-
-' User to System
-User -->> ManageUserSession : Login/Signup Credentials
-User -->> ProcessPayment : Payment Details / Bill Info
-User -->> ProvideAIAssistance : Support Query / Prompt
-User -->> ViewInformation : Request for History/Dashboard
-
-' System to User
-ManageUserSession -->> User : Session Token / User Profile
-ProcessPayment -->> User : Transaction Status (Success/Failure)
-ProvideAIAssistance -->> User : AI Chat Response / Smart Suggestions
-ViewInformation -->> User : Dashboard View / Transaction History
-
-' System to External Entities
-ProcessPayment -> PaymentGateway : Payment Request (Amount, Recipient)
-ProvideAIAssistance -> AIService : Formatted AI Query
-
-' External Entities to System
-PaymentGateway -> ProcessPayment : Payment Confirmation / Status
-AIService -> ProvideAIAssistance : AI-generated Response
-
-' Internal Data Flows (System to Data Stores)
-ManageUserSession <--> UserStore
-ProcessPayment <--> TransactionStore
-ViewInformation <--> TransactionStore
-ViewInformation <--> UserStore
-ProvideAIAssistance <--> TransactionStore : reads for suggestions
+PayMateSystem -->> AIService : AI Request (Query, User Data)
+AIService -->> PayMateSystem : AI-Generated Response (Suggestions, Chat)
 
 @enduml
