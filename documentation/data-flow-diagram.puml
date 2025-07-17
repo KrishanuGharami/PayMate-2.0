@@ -1,40 +1,54 @@
 @startuml
 !theme vibrant
+title Level 0 Data Flow Diagram for PayMate Web App
 
-title Data Flow Diagram (Level 0) for PayMate Web App
-
+' Define Actors (External Entities)
 actor "User" as User
-rectangle "PayMate Web App" as App #Application
+actor "Payment Gateway\n(Stripe, PayPal, etc.)" as PaymentGateway
+actor "AI Service\n(Google AI)" as AIService
 
-boundary "Payment Gateway" as PaymentGateway
-boundary "AI Service" as AIService
+' Define the main process (the system)
+rectangle "PayMate Web App" as PayMate {
 
-database "User Data" as UserStore
-database "Transaction History" as TransactionStore
+  ' Define Data Stores (conceptual)
+  database "User Data" as UserStore
+  database "Transaction Data" as TransactionStore
 
-' User Authentication Flows
-User -> App : Login/Signup Info
-App -> UserStore : Store/Verify User Credentials
-UserStore -> App : User Profile Data
-App -> User : Authenticated Session / Dashboard
+  ' Define Processes within the system
+  (Process Payment) as ProcessPayment
+  (Manage User Session) as ManageUserSession
+  (Provide AI Assistance) as ProvideAIAssistance
+  (View Information) as ViewInformation
+}
 
-' Payment & Transaction Flows
-User -> App : Payment Request (Amount, Recipient)
-App -> PaymentGateway : Authorize Payment
-PaymentGateway -> App : Payment Status (Success/Failure)
-App -> TransactionStore : Record Transaction Details
-App -> User : Display Transaction Confirmation
 
-' AI-driven Flows
-User -> App : Support Chat Query
-App -> AIService : AI Prompt (User Query)
-AIService -> App : AI Generated Response
-App -> User : Display Chatbot Response
+' Data Flows
 
-' AI Suggestions Flow (background process)
-TransactionStore -> App : Reads Transaction History
-App -> AIService : AI Prompt (Transaction Data)
-AIService -> App : Smart Suggestions
-App -> User : Display Smart Suggestions
+' User to System
+User -->> ManageUserSession : Login/Signup Credentials
+User -->> ProcessPayment : Payment Details / Bill Info
+User -->> ProvideAIAssistance : Support Query / Prompt
+User -->> ViewInformation : Request for History/Dashboard
+
+' System to User
+ManageUserSession -->> User : Session Token / User Profile
+ProcessPayment -->> User : Transaction Status (Success/Failure)
+ProvideAIAssistance -->> User : AI Chat Response / Smart Suggestions
+ViewInformation -->> User : Dashboard View / Transaction History
+
+' System to External Entities
+ProcessPayment -> PaymentGateway : Payment Request (Amount, Recipient)
+ProvideAIAssistance -> AIService : Formatted AI Query
+
+' External Entities to System
+PaymentGateway -> ProcessPayment : Payment Confirmation / Status
+AIService -> ProvideAIAssistance : AI-generated Response
+
+' Internal Data Flows (System to Data Stores)
+ManageUserSession <--> UserStore
+ProcessPayment <--> TransactionStore
+ViewInformation <--> TransactionStore
+ViewInformation <--> UserStore
+ProvideAIAssistance <--> TransactionStore : reads for suggestions
 
 @enduml
