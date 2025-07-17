@@ -1,0 +1,24 @@
+@startuml
+title Activity Diagram: AI Support Chat Workflow
+
+start
+
+:User submits a query on the support page;
+
+:System sends the query to the Genkit AI flow;
+
+:The Genkit flow calls the Google AI Service with the user's query;
+
+:AI Service analyzes the query to understand intent;
+
+if (Does the query require human intervention?) then (yes)
+  :The AI response flags the conversation for escalation;
+  :System notifies the user that a support agent will be in touch;
+else (no)
+  :The AI generates a helpful response;
+  :System displays the AI response to the user;
+endif
+
+stop
+
+@enduml
