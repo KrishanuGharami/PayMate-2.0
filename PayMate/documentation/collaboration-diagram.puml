@@ -1,0 +1,32 @@
+@startuml
+!theme vibrant
+
+title PayMate App - Collaboration Diagram
+
+actor User
+participant "PayMate App (UI)" as UI
+participant "Backend API" as API
+participant "Payment Gateway" as Gateway
+participant "AI Service" as AIService
+
+group Payment Flow
+    User -> UI: 1. Initiate Payment (amount, recipient)
+    UI -> API: 2. Request Payment Intent
+    API -> Gateway: 3. Create Transaction
+    Gateway --> API: 4. Return Transaction Status (e.g., client secret)
+    API --> UI: 5. Forward Status to Client
+    UI -> Gateway: 6. Confirm Payment with Status
+    Gateway --> UI: 7. Payment Confirmation (Success/Failure)
+    UI -> User: 8. Display Payment Result
+end
+
+group AI Support Flow
+    User -> UI: 1. Send Support Query
+    UI -> API: 2. Request AI Response (via Genkit flow)
+    API -> AIService: 3. Process Query
+    AIService --> API: 4. Return Generated Response
+    API --> UI: 5. Forward Response to Client
+    UI -> User: 6. Display Chatbot Message
+end
+
+@enduml
