@@ -1,0 +1,54 @@
+@startuml Data Flow Diagram for PayMate
+
+!theme vibrant
+
+title Data Flow Diagram (Level 0) - PayMate Web App
+
+' Define Actors (External Entities)
+actor "User" as User
+actor "Payment Gateway" as PaymentGateway
+actor "AI Service" as AIService
+
+' Define the System Boundary
+rectangle "PayMate Web App" as System {
+    ' Define Processes within the system
+    (1.0\nHandle Authentication) as Auth
+    (2.0\nProcess Payment) as ProcessPayment
+    (3.0\nProvide AI Assistance) as AIAssistance
+    (4.0\nDisplay Information) as DisplayInfo
+
+    ' Define Data Stores (conceptual for this prototype)
+    database "User Credentials\n(Local Storage)" as UserStore
+    database "Transaction History\n(Mock Data)" as TransactionStore
+}
+
+
+' Data Flows
+
+' User Authentication Flow
+User -->> Auth : Login/Signup Credentials
+Auth -->> UserStore : Store/Verify Credentials
+UserStore -->> Auth : User Data
+Auth -->> User : Authentication Status
+
+' Payment Flow
+User -->> ProcessPayment: Payment Details (Amount, Recipient)
+ProcessPayment ->> PaymentGateway : Payment Request
+PaymentGateway ->> ProcessPayment : Transaction Status (Mocked)
+ProcessPayment ->> TransactionStore : Record Transaction
+ProcessPayment ->> User : Payment Confirmation
+
+' Information Display Flow
+User ->> DisplayInfo : Request Dashboard/History
+TransactionStore -> DisplayInfo : Transaction Data
+DisplayInfo ->> User : Rendered UI (Balance, History)
+
+' AI Assistance Flow
+User ->> AIAssistance : Support Query / Dashboard Load
+AIAssistance ->> AIService : Prompt (Query / Transaction Data)
+AIService ->> AIAssistance : AI Response (Chat Reply / Suggestions)
+AIAssistance ->> DisplayInfo : Suggestions for Dashboard
+AIAssistance ->> User : AI Chat Response
+
+
+@enduml
