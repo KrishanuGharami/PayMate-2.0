@@ -1,0 +1,64 @@
+@startuml
+title PayMate Project: RAD Model Application
+
+skinparam activity {
+    BackgroundColor #FFF0E6
+    BorderColor #FF8C00
+    ArrowColor #333
+    FontName Inter
+    FontSize 14
+}
+skinparam note {
+    BackgroundColor #F5F5F5
+    BorderColor #888
+    FontName Inter
+    FontSize 12
+}
+
+start
+
+:Requirements Planning;
+note right
+    - High-level goals are defined.
+    - **PayMate Example:** "Build a digital
+      payment app with AI features."
+    - Scope is kept flexible.
+end note
+
+repeat
+    :User Design & Prototyping;
+    note left
+        **Rapid Prototyping Cycle**
+        - UI is built with ShadCN components.
+        - AI flows are created with Genkit.
+        - **Example:** A functional Transfer page
+          prototype is built immediately.
+    end note
+
+    :User Review & Feedback;
+    note right
+        - User interacts with the live prototype.
+        - Feedback is given directly.
+        - **Example:** "This is great, but can you
+          also add a QR code upload button?"
+    end note
+
+    :Construction & Refinement;
+    note left
+        - Prototype is refined based on feedback.
+        - The working model is updated.
+        - Low-level coding and integration.
+    end note
+
+repeat while (User requests more changes?) is (yes)
+-> (no);
+
+:Cutover (Deployment);
+note right
+    - Final system is deployed.
+    - User training and handoff.
+    - PayMate app is released.
+end note
+
+stop
+@enduml
