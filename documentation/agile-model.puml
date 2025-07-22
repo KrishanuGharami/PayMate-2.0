@@ -1,0 +1,78 @@
+@startuml
+title PayMate Project: Agile (Conversational) Model Application
+
+skinparam activity {
+    BackgroundColor #E6F0E6
+    BorderColor #4CAF50
+    ArrowColor #333
+    FontName Inter
+    FontSize 14
+}
+skinparam note {
+    BackgroundColor #F5F5F5
+    BorderColor #888
+    FontName Inter
+    FontSize 12
+}
+
+start
+
+partition "Project Backlog" {
+    :List of all desired features;
+    note
+        - User Authentication
+        - UPI & Bank Transfer
+        - QR Code Payments
+        - Bill Payments
+        - AI Chatbot Support
+    end note
+}
+
+repeat
+    partition "Sprint (1-2 Week Iteration)" {
+        :Requirements;
+        note left
+            Select a high-priority feature
+            from the backlog.
+            (e.g., "Implement QR Code Scan")
+        end note
+
+        :Design;
+        note right
+            Quickly design the UI and
+            logic for the selected feature.
+        end note
+
+        :Develop;
+        note left
+            Write the code for the feature.
+            (e.g., Add camera access,
+            create QR scanner component)
+        end note
+
+        :Test;
+        note right
+            Test the new feature in isolation
+            and with the existing app.
+        end note
+
+        :Deploy;
+        note left
+            A new working increment of
+            PayMate is delivered.
+        end note
+
+        :Review;
+        note right
+            User provides feedback.
+            New ideas are added to the backlog.
+            (e.g., "This works, now add QR Upload.")
+        end note
+    }
+repeat while (Are there more features in the backlog?) is (yes)
+-> (no);
+
+:Final Product Delivered;
+
+stop
+@enduml
