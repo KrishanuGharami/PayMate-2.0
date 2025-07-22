@@ -17,7 +17,7 @@ skinparam note {
 
 start
 
-:Requirements Gathering;
+:1) Requirements Analysis\nRequirements Gathering;
 note right
     - Define all features upfront:
       Login, Signup, User Profile
@@ -27,7 +27,7 @@ note right
     - Script the entire AI Chatbot dialogue
 end note
 
--> System & UI Design;
+-> 2) System Design\nSystem & UI Design;
 note right
     - Create finalized wireframes and
       mockups for every single screen
@@ -37,7 +37,7 @@ note right
     - No changes allowed after this phase.
 end note
 
--> Implementation (Coding);
+-> 3) Implementation\nImplementation (Coding);
 note right
     - Build the entire frontend in Next.js.
     - Develop the complete backend API.
@@ -46,7 +46,7 @@ note right
     - Code the Genkit AI flows.
 end note
 
--> Testing & QA;
+-> 4) Testing\nTesting & QA;
 note right
     - The full application is tested only
       after all coding is complete.
@@ -55,14 +55,14 @@ note right
       going back to the design phase.
 end note
 
--> Deployment & Release;
+-> 5) Deployment\nDeployment & Release;
 note right
     - The completed application is deployed
       to the production server.
     - The product is released to end-users.
 end note
 
--> Maintenance;
+-> 6) Maintenance\nMaintenance;
 note right
     - Post-launch support and bug fixes.
     - New features would require starting
