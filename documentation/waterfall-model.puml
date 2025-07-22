@@ -14,60 +14,93 @@ skinparam note {
     FontName Inter
     FontSize 12
 }
+skinparam partition {
+    BackgroundColor #EFEFEF
+    BorderColor #A9A9A9
+    FontName Inter
+    FontSize 16
+    FontColor #333
+}
 
 start
 
-:1) Requirements Analysis\nRequirements Gathering;
-note right
-    - Define all features upfront:
-      Login, Signup, User Profile
-    - Detail every payment flow:
-      UPI, Bank Transfer, QR Scan
-    - Specify all Bill Payment categories
-    - Script the entire AI Chatbot dialogue
-end note
+partition "1. Requirements Analysis" {
+    :Gather and Document All Requirements;
+    note right
+        - **Define all features upfront:**
+          Login, Signup, User Profile.
+        - **Detail every payment flow:**
+          UPI, Bank Transfer, QR Scan.
+        - **Specify all Bill Payment categories.**
+        - **Script the entire AI Chatbot dialogue.**
+        - **Output:** A comprehensive Software
+          Requirement Specification (SRS) document.
+    end note
+}
 
--> 2) System Design\nSystem & UI Design;
-note right
-    - Create finalized wireframes and
-      mockups for every single screen
-      (Dashboard, Transfer, Bills, etc.)
-    - Design the complete system
-      architecture and database schema.
-    - No changes allowed after this phase.
-end note
+->
 
--> 3) Implementation\nImplementation (Coding);
-note right
-    - Build the entire frontend in Next.js.
-    - Develop the complete backend API.
-    - Integrate with all payment gateways
-      (Stripe, PayPal, Razorpay) as per design.
-    - Code the Genkit AI flows.
-end note
+partition "2. System Design" {
+    :Create System & UI/UX Design;
+    note right
+        - **Create finalized wireframes and mockups**
+          for every single screen (Dashboard, Transfer, etc.).
+        - **Design the complete system architecture**
+          and database schema.
+        - **Policy:** No changes are allowed after
+          this phase is complete.
+    end note
+}
 
--> 4) Testing\nTesting & QA;
-note right
-    - The full application is tested only
-      after all coding is complete.
-    - Bugs found here are difficult and
-      costly to fix as they may require
-      going back to the design phase.
-end note
+->
 
--> 5) Deployment\nDeployment & Release;
-note right
-    - The completed application is deployed
-      to the production server.
-    - The product is released to end-users.
-end note
+partition "3. Implementation" {
+    :Code the Full Application;
+    note right
+        - **Build the entire frontend** in Next.js.
+        - **Develop the complete backend API.**
+        - **Integrate with all payment gateways**
+          (Stripe, PayPal, Razorpay) as per the design.
+        - **Code the Genkit AI flows** based on the
+          scripted dialogues.
+    end note
+}
 
--> 6) Maintenance\nMaintenance;
-note right
-    - Post-launch support and bug fixes.
-    - New features would require starting
-      a new waterfall cycle.
-end note
+->
+
+partition "4. Testing" {
+    :Perform Quality Assurance;
+    note right
+        - **The full application is tested only after**
+          all coding is complete.
+        - **Bugs found here are difficult and costly to fix**
+          as they may require going back to the design phase,
+          which is discouraged by the model.
+    end note
+}
+
+->
+
+partition "5. Deployment" {
+    :Release to Production;
+    note right
+        - **The completed application is deployed**
+          to the production server (e.g., Firebase App Hosting).
+        - **The final product is released** to end-users.
+    end note
+}
+
+->
+
+partition "6. Maintenance" {
+    :Provide Ongoing Support;
+    note right
+        - **Handle post-launch support** and bug fixes.
+        - **Any new features or major changes** would
+          require starting a brand new waterfall cycle,
+          beginning with requirements analysis.
+    end note
+}
 
 stop
 @enduml
