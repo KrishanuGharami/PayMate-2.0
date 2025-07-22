@@ -1,0 +1,73 @@
+@startuml
+title PayMate Project: Waterfall Model Application
+
+skinparam activity {
+    BackgroundColor #ADD8E6
+    BorderColor #4682B4
+    ArrowColor #333
+    FontName Inter
+    FontSize 14
+}
+skinparam note {
+    BackgroundColor #F5F5F5
+    BorderColor #888
+    FontName Inter
+    FontSize 12
+}
+
+start
+
+:Requirements Gathering;
+note right
+    - Define all features upfront:
+      Login, Signup, User Profile
+    - Detail every payment flow:
+      UPI, Bank Transfer, QR Scan
+    - Specify all Bill Payment categories
+    - Script the entire AI Chatbot dialogue
+end note
+
+-> System & UI Design;
+note right
+    - Create finalized wireframes and
+      mockups for every single screen
+      (Dashboard, Transfer, Bills, etc.)
+    - Design the complete system
+      architecture and database schema.
+    - No changes allowed after this phase.
+end note
+
+-> Implementation (Coding);
+note right
+    - Build the entire frontend in Next.js.
+    - Develop the complete backend API.
+    - Integrate with all payment gateways
+      (Stripe, PayPal, Razorpay) as per design.
+    - Code the Genkit AI flows.
+end note
+
+-> Testing & QA;
+note right
+    - The full application is tested only
+      after all coding is complete.
+    - Bugs found here are difficult and
+      costly to fix as they may require
+      going back to the design phase.
+end note
+
+-> Deployment & Release;
+note right
+    - The completed application is deployed
+      to the production server.
+    - The product is released to end-users.
+end note
+
+-> Maintenance;
+note right
+    - Post-launch support and bug fixes.
+    - New features would require starting
+      a new waterfall cycle.
+end note
+
+stop
+@enduml
