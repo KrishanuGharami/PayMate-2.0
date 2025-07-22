@@ -61,15 +61,15 @@ export const WATERFALL_SDLC_PROMPT = `
 
   The image should depict a literal, massive waterfall, with each cascading level representing a distinct, separate phase of development. The water should flow strictly downwards, from top to bottom, with no way to go back up, symbolizing the model's inflexibility.
 
-  1.  **Top Level (Requirements):** The water source starts here. Show illustrated scrolls and documents with checklists and graphs, representing the exhaustive upfront planning. The "PayMate" logo is faintly visible on the documents.
+  1.  **Top Level (Requirements):** The water source starts here. Show illustrated scrolls and documents detailing every feature upfront: login/signup forms, all bill payment categories (Mobile, Electricity, etc.), and the precise flows for UPI, Bank Transfer, and QR code payments. The full dialogue for the AI chatbot is also scripted here. The "PayMate" logo is clearly visible on the documents.
 
-  2.  **Second Level (Design):** The water crashes into this pool. Floating in the water are polished UI/UX wireframes and mockups of the PayMate app screens (dashboard, transfer page). The design looks rigid and finalized.
+  2.  **Second Level (Design):** The water crashes into this pool. Floating in the water are polished, finalized UI/UX wireframes and mockups of all PayMate app screens (Dashboard, Transfer, Bills, History, Support). The designs look rigid and unchangeable.
 
-  3.  **Third Level (Implementation):** The water flows down. This level shows lines of code on glowing blue screens and developers working, building the application based on the designs from the level above.
+  3.  **Third Level (Implementation):** The water flows down. This level shows developers at workstations, with glowing blue screens full of code, building the entire frontend and backend of the PayMate app exactly as specified in the design documents from the level above.
 
-  4.  **Fourth Level (Testing):** The water continues its descent. Here, show magnifying glasses over the app screens, with red bug icons being found. A QA tester looks frustrated because they can't send the issues back "up" the waterfall.
+  4.  **Fourth Level (Testing):** The water continues its descent. Here, show magnifying glasses over the app screens, with red bug icons being found. A QA tester looks frustrated because they've found a critical issue but can't send it back "up" the waterfall to the developers easily.
 
-  5.  **Bottom Pool (Deployment):** The waterfall ends in a final, placid pool where a fully formed, but potentially flawed, PayMate app is delivered on a smartphone screen.
+  5.  **Bottom Pool (Deployment):** The waterfall ends in a final, placid pool where a fully formed, but potentially flawed, PayMate app is delivered on a smartphone screen to an end-user.
 
   The overall style should be a clear, slightly stylized illustration with a cool color palette (blues, greys) to match the "PayMate" branding. Emphasize the linear, unchangeable, top-to-bottom flow.
 `;
