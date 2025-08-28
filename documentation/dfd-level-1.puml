@@ -1,60 +1,68 @@
 @startuml
-title "PayMate - DFD Level 1"
+title "PayMate Web App - DFD Level 1 (Compact)"
 
-skinparam defaultFontName Inter
+!theme plain
 skinparam rectangle {
-  BackgroundColor #ADD8E6
-  BorderColor #4682B4
+    BorderColor #4682B4
+    BackgroundColor #ADD8E6
 }
 skinparam database {
-  BackgroundColor #F5F5DC
-  BorderColor #BDB76B
+    BorderColor #888
+    BackgroundColor #F5F5F5
 }
 skinparam actor {
-  BackgroundColor #FFFFFF
-  BorderColor #000000
+    BorderColor #333
+}
+skinparam arrow {
+    FontSize 10
 }
 
+actor User
 
-' External Entities
-actor "User" as user
-boundary "Payment Gateways" as payment_gateway
-boundary "AI Service" as ai_service
+package "PayMate Web App" {
+  rectangle "1. Manage \nAccount" as P1
+  rectangle "2. Process \nPayments" as P2
+  rectangle "3. AI \nAssistance" as P3
+  rectangle "4. View \nHistory" as P4
+}
 
-' Data Stores
-database "User Data" as user_store
-database "Transaction Data" as transaction_store
+database "User Data" as UserStore
+database "Transaction Data" as TransactionStore
 
-' Processes within the PayMate System
-rectangle "1.0\nManage User Account" as p1
-rectangle "2.0\nProcess Payments" as p2
-rectangle "3.0\nGenerate AI Assistance" as p3
-rectangle "4.0\nView History" as p4
+rectangle "Payment Gateways" as Gateways
+rectangle "AI Service" as AIService
+
+' Arrange elements for compactness
+User -left-> P1
+User -left-> P2
+User -left-> P3
+User -left-> P4
+
+P1 -up-> UserStore
+P2 -down-> TransactionStore
+P2 -right-> Gateways
+P3 -right-> AIService
+P3 -up-> TransactionStore
+P4 -up-> TransactionStore
 
 ' Data Flows
+User -> P1 : Credentials
+P1 -> UserStore : Auth Request
+UserStore -> P1 : User Profile
 
-' User interactions
-user -->(p1) : Login/Signup Info
-user -->(p2) : Transaction Details
-user -->(p3) : Support Query
-user -->(p4) : View History Request
+User -> P2 : Payment Data
+P2 -> Gateways : Payment Request
+Gateways -> P2 : Confirmation
+P2 -> TransactionStore : Record Txn
 
-(p1)-->user : Auth Status
-(p2)-->user : Payment Status
-(p3)-->user : AI Response
-(p4)-->user : Transaction History
+User -> P3 : Query / Usage Data
+P3 -> AIService : AI Request
+AIService -> P3 : AI Response
+TransactionStore -> P3 : Txn History
+P3 -> User : Suggestions / Help
 
-' Flows to/from Data Stores
-p1 <--> user_store
-p2 --> transaction_store : Record Transaction
-p3 -> transaction_store : Get Context for Suggestions
-p4 -> transaction_store : Fetch History
-
-' Flows to/from External Entities
-p2 -> payment_gateway : Payment Request
-payment_gateway -> p2 : Payment Response
-
-p3 -> ai_service : AI Prompt
-ai_service -> p3 : AI-Generated Content
+User -> P4 : Request
+TransactionStore -> P4 : History
+P4 -> User : Formatted History
 
 @enduml
