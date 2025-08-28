@@ -1,79 +1,60 @@
 @startuml
-title PayMate Web App: DFD Level 1
+title "PayMate - DFD Level 1"
 
-!define ENTITY skinparam rectangle<<ENTITY>> { \
-    BackgroundColor #F0E68C \
-    BorderColor #B8860B \
-}
-!define PROCESS skinparam ellipse<<PROCESS>> { \
-    BackgroundColor #ADD8E6 \
-    BorderColor #4682B4 \
-}
-!define DATASTORE skinparam database<<DATASTORE>> { \
-    BackgroundColor #E6E6FA \
-    BorderColor #6A5ACD \
-}
-
-skinparam default {
-    FontName Inter
-    FontSize 12
-}
+skinparam defaultFontName Inter
 skinparam rectangle {
-    FontName Inter
-    FontSize 14
-}
-skinparam ellipse {
-    FontName Inter
-    FontSize 14
+  BackgroundColor #ADD8E6
+  BorderColor #4682B4
 }
 skinparam database {
-    FontName Inter
-    FontSize 14
+  BackgroundColor #F5F5DC
+  BorderColor #BDB76B
+}
+skinparam actor {
+  BackgroundColor #FFFFFF
+  BorderColor #000000
 }
 
-' Entities
-rectangle "User" as User <<ENTITY>>
-rectangle "Payment Gateway\n(Stripe, PayPal, etc.)" as PaymentGateway <<ENTITY>>
-rectangle "AI Service\n(Google AI)" as AIService <<ENTITY>>
+
+' External Entities
+actor "User" as user
+boundary "Payment Gateways" as payment_gateway
+boundary "AI Service" as ai_service
 
 ' Data Stores
-database "User Data Store" as UserStore <<DATASTORE>>
-database "Transaction Data Store" as TransactionStore <<DATASTORE>>
+database "User Data" as user_store
+database "Transaction Data" as transaction_store
 
-' Main Process Boundary
-rectangle "PayMate Web App" {
-    ellipse "1.0\nManage User Account" as P1 <<PROCESS>>
-    ellipse "2.0\nProcess Payments" as P2 <<PROCESS>>
-    ellipse "3.0\nGenerate AI Assistance" as P3 <<PROCESS>>
-    ellipse "4.0\nView History" as P4 <<PROCESS>>
-}
+' Processes within the PayMate System
+rectangle "1.0\nManage User Account" as p1
+rectangle "2.0\nProcess Payments" as p2
+rectangle "3.0\nGenerate AI Assistance" as p3
+rectangle "4.0\nView History" as p4
 
 ' Data Flows
 
-' User Interactions
-User --> P1 : Login/Signup Credentials
-P1 --> User : Session Token / Welcome
+' User interactions
+user -->(p1) : Login/Signup Info
+user -->(p2) : Transaction Details
+user -->(p3) : Support Query
+user -->(p4) : View History Request
 
-User --> P2 : Payment Details (UPI, Bank, Bill)
-P2 --> User : Payment Confirmation / Status
+(p1)-->user : Auth Status
+(p2)-->user : Payment Status
+(p3)-->user : AI Response
+(p4)-->user : Transaction History
 
-User --> P3 : Support Query / Request for Suggestions
-P3 --> User : AI Response / Smart Suggestions
+' Flows to/from Data Stores
+p1 <--> user_store
+p2 --> transaction_store : Record Transaction
+p3 -> transaction_store : Get Context for Suggestions
+p4 -> transaction_store : Fetch History
 
-User --> P4 : Request for Transaction History
-P4 --> User : Formatted Transaction List
+' Flows to/from External Entities
+p2 -> payment_gateway : Payment Request
+payment_gateway -> p2 : Payment Response
 
-' Process to Data Store Flows
-P1 <--> UserStore : User Details
-P2 --> TransactionStore : New Transaction Record
-P3 <- TransactionStore : Transaction History for AI Analysis
-P4 -> TransactionStore : Fetch Transaction Records
-
-' Process to External Entity Flows
-P2 --> PaymentGateway : Payment API Request
-PaymentGateway --> P2 : Payment API Response (Success/Failure)
-
-P3 --> AIService : AI Prompt (Query, History)
-AIService --> P3 : AI Model Output
+p3 -> ai_service : AI Prompt
+ai_service -> p3 : AI-Generated Content
 
 @enduml
