@@ -65,8 +65,8 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md mx-auto shadow-2xl">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-background-end p-4">
+      <Card className="w-full max-w-md mx-auto shadow-2xl bg-card/70 backdrop-blur-xl border-border/20">
         <CardHeader className="space-y-1 text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="p-2.5 rounded-lg bg-primary text-primary-foreground">
