@@ -11,12 +11,12 @@ import {
 
 interface PayPalButtonsWrapperProps {
   amount: string;
-  onProcessing: () => void;
+  onInitiatePayment: () => Promise<boolean>;
   onSuccess: (details: { transactionId: string }) => void;
   onError: (error: { message: string }) => void;
 }
 
-export const PayPalButtonsWrapper = ({ amount: inrAmount, onProcessing, onSuccess, onError }: PayPalButtonsWrapperProps) => {
+export const PayPalButtonsWrapper = ({ amount: inrAmount, onInitiatePayment, onSuccess, onError }: PayPalButtonsWrapperProps) => {
 
   // For this prototype, we'll use a fixed conversion rate.
   // In a real-world application, you would fetch this from a reliable currency conversion API.
@@ -47,8 +47,13 @@ export const PayPalButtonsWrapper = ({ amount: inrAmount, onProcessing, onSucces
     });
   }
   
-  const onClick = () => {
-    onProcessing();
+  const onClick = async (data: Record<string, unknown>, actions: any) => {
+    const canProceed = await onInitiatePayment();
+    if (!canProceed) {
+      // Reject the promise to prevent the PayPal modal from opening
+      return actions.reject();
+    }
+    return actions.resolve();
   }
 
   const handleOnError = (err: any) => {

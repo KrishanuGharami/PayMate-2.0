@@ -18,13 +18,13 @@ const stripePromise = loadStripe(
 
 interface CheckoutFormProps {
     amount: number;
-    onProcessing: () => void;
+    onInitiatePayment: () => Promise<boolean>;
     onSuccess: (details: { transactionId: string }) => void;
     onError: (error: { message: string }) => void;
 }
 
 
-const CheckoutForm = ({ amount, onProcessing, onSuccess, onError }: CheckoutFormProps) => {
+const CheckoutForm = ({ amount, onInitiatePayment, onSuccess, onError }: CheckoutFormProps) => {
   const stripe = useStripe()
   const elements = useElements()
   const { theme } = useTheme()
@@ -32,14 +32,20 @@ const CheckoutForm = ({ amount, onProcessing, onSuccess, onError }: CheckoutForm
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
+    setIsLoading(true)
 
     if (!stripe || !elements) {
       onError({ message: "Stripe.js has not loaded yet." });
+      setIsLoading(false);
       return
     }
 
-    setIsLoading(true)
-    onProcessing();
+    const canProceed = await onInitiatePayment();
+    if (!canProceed) {
+        setIsLoading(false);
+        // The parent component has already updated the UI to show an error (e.g., fraud detected)
+        return;
+    }
 
     try {
         const response = await fetch('/api/payment/stripe/create-payment-intent', {
@@ -119,16 +125,16 @@ const CheckoutForm = ({ amount, onProcessing, onSuccess, onError }: CheckoutForm
 
 interface StripeFormProps {
     amount: number;
-    onProcessing: () => void;
+    onInitiatePayment: () => Promise<boolean>;
     onSuccess: (details: { transactionId: string }) => void;
     onError: (error: { message: string }) => void;
 }
 
-export const StripeForm = ({ amount, onProcessing, onSuccess, onError }: StripeFormProps) => (
+export const StripeForm = ({ amount, onInitiatePayment, onSuccess, onError }: StripeFormProps) => (
   <Elements stripe={stripePromise}>
     <CheckoutForm 
       amount={amount} 
-      onProcessing={onProcessing}
+      onInitiatePayment={onInitiatePayment}
       onSuccess={onSuccess}
       onError={onError}
     />

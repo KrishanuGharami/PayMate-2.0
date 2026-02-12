@@ -7,16 +7,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { StripeForm } from '@/components/payment-gateways/stripe-form'
 import { PayPalButtonsWrapper } from '@/components/payment-gateways/paypal-button'
 import { RazorpayButton } from '@/components/payment-gateways/razorpay-button'
-import { CreditCard, Loader2, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
+import { CreditCard, Loader2, CheckCircle, XCircle, RefreshCw, ShieldAlert } from 'lucide-react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { detectFraud, FraudDetectionInput } from '@/ai/flows/fraud-detection-flow'
+import { useToast } from '@/hooks/use-toast'
 
 type PaymentStatus = 'idle' | 'processing' | 'succeeded' | 'failed';
-type PaymentError = { message: string };
+type PaymentError = { message: string, isFraud?: boolean };
 type PaymentSuccess = { transactionId: string };
 
 export function PaymentPageClient() {
     const router = useRouter();
+    const { toast } = useToast();
     const searchParams = useSearchParams()
     const amount = searchParams.get('amount') || '0';
     const recipient = searchParams.get('recipient');
@@ -25,8 +28,10 @@ export function PaymentPageClient() {
     const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('idle');
     const [paymentError, setPaymentError] = useState<PaymentError | null>(null);
     const [paymentSuccess, setPaymentSuccess] = useState<PaymentSuccess | null>(null);
+    const [lastPaymentAttempt, setLastPaymentAttempt] = useState<number | null>(null);
 
     const amountInCents = Math.round(parseFloat(amount) * 100);
+    const numericAmount = parseFloat(amount);
 
     const handleSuccess = (details: PaymentSuccess) => {
         setPaymentSuccess(details);
@@ -37,6 +42,65 @@ export function PaymentPageClient() {
         setPaymentError(error);
         setPaymentStatus('failed');
     };
+
+    const handleInitiatePayment = async (): Promise<boolean> => {
+        // 1. Rate Limiting
+        const now = Date.now();
+        if (lastPaymentAttempt && (now - lastPaymentAttempt < 5000)) { // 5-second cooldown
+            toast({
+                title: 'Too Many Attempts',
+                description: 'You are trying to make payments too quickly. Please wait a moment.',
+                variant: 'destructive',
+            });
+            return false;
+        }
+        setLastPaymentAttempt(now);
+        setPaymentStatus('processing');
+
+        // 2. Fraud Detection
+        try {
+            // Mock user history for the prototype
+            const fraudCheckInput: FraudDetectionInput = {
+                amount: numericAmount,
+                recipientId: recipient || 'unknown',
+                transactionTime: new Date().toISOString(),
+                userHistory: {
+                    averageAmount: 500,
+                    commonRecipients: ['mom@upi', 'friend@paymate', 'Starbucks'],
+                    unusualLocation: numericAmount > 20000, // Mock: flag if amount is high
+                },
+            };
+            
+            const fraudResult = await detectFraud(fraudCheckInput);
+
+            if (fraudResult.isFraudulent) {
+                handleError({
+                    message: `This transaction has been blocked for security reasons. Reason: ${fraudResult.reason}`,
+                    isFraud: true,
+                });
+                return false; // Stop the payment process
+            }
+
+            // If not fraudulent, proceed.
+            toast({
+                title: 'Security Scan Complete',
+                description: 'Checks passed. Finalizing payment...',
+                variant: 'success',
+            });
+            return true;
+
+        } catch (error) {
+            console.error("Fraud detection error:", error);
+            toast({
+                title: 'Security Scan Failed',
+                description: 'Could not verify transaction security. Proceeding with caution.',
+                variant: 'warning',
+            });
+            // For this prototype, we'll allow payment to proceed even if the scan fails.
+            return true;
+        }
+    };
+
 
     const handleRetry = () => {
         setPaymentStatus('idle');
@@ -53,7 +117,7 @@ export function PaymentPageClient() {
             <div className="flex flex-col items-center justify-center h-full text-center p-8">
                 <Loader2 className="h-16 w-16 animate-spin text-primary mb-6" />
                 <h1 className="text-2xl font-bold tracking-tight">Processing Payment...</h1>
-                <p className="text-muted-foreground mt-2">Please do not close or refresh the page.</p>
+                <p className="text-muted-foreground mt-2">Performing security checks and connecting to the gateway.</p>
             </div>
         );
     }
@@ -77,12 +141,18 @@ export function PaymentPageClient() {
     if (paymentStatus === 'failed') {
         return (
             <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                <XCircle className="h-16 w-16 text-destructive mb-6" />
-                <h1 className="text-2xl font-bold tracking-tight">Transaction Failed</h1>
-                <p className="text-muted-foreground mt-2">{paymentError?.message || 'An unexpected error occurred.'}</p>
+                 {paymentError?.isFraud ? (
+                    <ShieldAlert className="h-16 w-16 text-destructive mb-6" />
+                 ) : (
+                    <XCircle className="h-16 w-16 text-destructive mb-6" />
+                 )}
+                <h1 className="text-2xl font-bold tracking-tight">
+                    {paymentError?.isFraud ? 'Transaction Blocked' : 'Transaction Failed'}
+                </h1>
+                <p className="text-muted-foreground mt-2 max-w-md">{paymentError?.message || 'An unexpected error occurred.'}</p>
                 <Button onClick={handleRetry} className="mt-8">
                     <RefreshCw className="mr-2 h-4 w-4" />
-                    Retry Payment
+                    Try Again
                 </Button>
             </div>
         );
@@ -100,7 +170,7 @@ export function PaymentPageClient() {
                 <Card className="shadow-lg border-none">
                     <CardHeader>
                         <CardTitle>Choose Payment Method</CardTitle>
-                        <CardDescription>Select a provider to finalize your transaction.</CardDescription>
+                        <CardDescription>We'll run a quick security scan before processing.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Tabs defaultValue="stripe" className="w-full">
@@ -116,7 +186,7 @@ export function PaymentPageClient() {
                             <TabsContent value="stripe" className="mt-6">
                                <StripeForm 
                                  amount={amountInCents} 
-                                 onProcessing={() => setPaymentStatus('processing')}
+                                 onInitiatePayment={handleInitiatePayment}
                                  onSuccess={handleSuccess}
                                  onError={handleError}
                                />
@@ -124,7 +194,7 @@ export function PaymentPageClient() {
                             <TabsContent value="paypal" className="mt-6">
                                 <PayPalButtonsWrapper 
                                   amount={amount} 
-                                  onProcessing={() => setPaymentStatus('processing')}
+                                  onInitiatePayment={handleInitiatePayment}
                                   onSuccess={handleSuccess}
                                   onError={handleError}
                                 />
@@ -132,7 +202,7 @@ export function PaymentPageClient() {
                             <TabsContent value="razorpay" className="mt-6">
                                 <RazorpayButton 
                                   amount={amountInCents} 
-                                  onProcessing={() => setPaymentStatus('processing')}
+                                  onInitiatePayment={handleInitiatePayment}
                                   onSuccess={handleSuccess}
                                   onError={handleError}
                                 />

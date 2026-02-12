@@ -37,13 +37,13 @@ declare global {
 
 interface RazorpayButtonProps {
     amount: number;
-    onProcessing: () => void;
+    onInitiatePayment: () => Promise<boolean>;
     onSuccess: (details: { transactionId: string }) => void;
     onError: (error: { message: string }) => void;
 }
 
 
-export const RazorpayButton = ({ amount, onProcessing, onSuccess, onError }: RazorpayButtonProps) => {
+export const RazorpayButton = ({ amount, onInitiatePayment, onSuccess, onError }: RazorpayButtonProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
@@ -75,7 +75,13 @@ export const RazorpayButton = ({ amount, onProcessing, onSuccess, onError }: Raz
     }
     
     setIsLoading(true);
-    onProcessing();
+
+    const canProceed = await onInitiatePayment();
+    if (!canProceed) {
+        setIsLoading(false);
+        // The parent component will have already set the error state.
+        return;
+    }
 
     try {
         // 1. Create an order on your server
