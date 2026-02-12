@@ -57,19 +57,19 @@ const generateImageFlow = ai.defineFlow(
  * generateImage({ prompt: WATERFALL_SDLC_PROMPT });
  */
 export const WATERFALL_SDLC_PROMPT = `
-  Create a visual metaphor for the Waterfall SDLC model applied to the "PayMate" financial app project.
+  Create a visual metaphor for the Waterfall SDLC model applied to the "PayMate 2.0" financial app project.
 
   The image should depict a literal, massive waterfall, with each cascading level representing a distinct, separate phase of development. The water should flow strictly downwards, from top to bottom, with no way to go back up, symbolizing the model's inflexibility.
 
-  1.  **Top Level (Requirements):** The water source starts here. Show illustrated scrolls and documents detailing every feature upfront: login/signup forms, all bill payment categories (Mobile, Electricity, etc.), and the precise flows for UPI, Bank Transfer, and QR code payments. The full dialogue for the AI chatbot is also scripted here. The "PayMate" logo is clearly visible on the documents.
+  1.  **Top Level (Requirements):** The water source starts here. Show illustrated scrolls and documents detailing every feature upfront: login/signup forms, all bill payment categories (Mobile, Electricity, etc.), and the precise flows for UPI, Bank Transfer, and QR code payments. The full dialogue for the AI chatbot is also scripted here. The "PayMate 2.0" logo is clearly visible on the documents.
 
-  2.  **Second Level (Design):** The water crashes into this pool. Floating in the water are polished, finalized UI/UX wireframes and mockups of all PayMate app screens (Dashboard, Transfer, Bills, History, Support). The designs look rigid and unchangeable.
+  2.  **Second Level (Design):** The water crashes into this pool. Floating in the water are polished, finalized UI/UX wireframes and mockups of all PayMate 2.0 app screens (Dashboard, Transfer, Bills, History, Support). The designs look rigid and unchangeable.
 
-  3.  **Third Level (Implementation):** The water flows down. This level shows developers at workstations, with glowing blue screens full of code, building the entire frontend and backend of the PayMate app exactly as specified in the design documents from the level above.
+  3.  **Third Level (Implementation):** The water flows down. This level shows developers at workstations, with glowing blue screens full of code, building the entire frontend and backend of the PayMate 2.0 app exactly as specified in the design documents from the level above.
 
   4.  **Fourth Level (Testing):** The water continues its descent. Here, show magnifying glasses over the app screens, with red bug icons being found. A QA tester looks frustrated because they've found a critical issue but can't send it back "up" the waterfall to the developers easily.
 
-  5.  **Bottom Pool (Deployment):** The waterfall ends in a final, placid pool where a fully formed, but potentially flawed, PayMate app is delivered on a smartphone screen to an end-user.
+  5.  **Bottom Pool (Deployment):** The waterfall ends in a final, placid pool where a fully formed, but potentially flawed, PayMate 2.0 app is delivered on a smartphone screen to an end-user.
 
-  The overall style should be a clear, slightly stylized illustration with a cool color palette (blues, greys) to match the "PayMate" branding. Emphasize the linear, unchangeable, top-to-bottom flow.
+  The overall style should be a clear, slightly stylized illustration with a cool color palette (blues, greys) to match the "PayMate 2.0" branding. Emphasize the linear, unchangeable, top-to-bottom flow.
 `;

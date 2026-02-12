@@ -89,7 +89,7 @@ export const RazorpayButton = ({ amount }: { amount: number }) => {
             key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
             amount: order.amount,
             currency: 'INR',
-            name: 'PayMate',
+            name: 'PayMate 2.0',
             description: 'Transaction',
             order_id: order.id,
             handler: function (response) {

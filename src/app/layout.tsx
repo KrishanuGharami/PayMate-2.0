@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'PayMate',
+  title: 'PayMate 2.0',
   description: 'A modern payment application.',
 };
 

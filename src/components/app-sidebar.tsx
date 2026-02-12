@@ -59,7 +59,7 @@ export function AppSidebar() {
             <div className="p-2.5 rounded-lg bg-primary text-primary-foreground">
               <Wallet size={24} />
             </div>
-            <h1 className="text-2xl font-bold text-primary group-data-[collapsible=icon]:hidden">PayMate</h1>
+            <h1 className="text-2xl font-bold text-primary group-data-[collapsible=icon]:hidden">PayMate 2.0</h1>
           </div>
           <div className="p-2 group-data-[collapsible=icon]:hidden">
             <ThemeToggle />

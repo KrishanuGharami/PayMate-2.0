@@ -82,7 +82,7 @@ export default function LoginPage() {
             <div className="p-2.5 rounded-lg bg-primary text-primary-foreground">
               <Wallet size={24} />
             </div>
-            <h1 className="text-3xl font-bold text-primary">PayMate</h1>
+            <h1 className="text-3xl font-bold text-primary">PayMate 2.0</h1>
           </div>
           <CardTitle className="text-2xl">Welcome Back!</CardTitle>
           <CardDescription>

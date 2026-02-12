@@ -33,7 +33,7 @@ const prompt = ai.definePrompt({
   name: 'aiChatbotSupportPrompt',
   input: {schema: AIChatbotSupportInputSchema},
   output: {schema: AIChatbotSupportOutputSchema},
-  prompt: `You are a helpful AI chatbot for the "PayMate" web application. Your goal is to assist users by answering their questions about the app's features and guiding them to the correct pages to perform actions.
+  prompt: `You are a helpful AI chatbot for the "PayMate 2.0" web application. Your goal is to assist users by answering their questions about the app's features and guiding them to the correct pages to perform actions.
 
   Here is a summary of the application's functionalities:
 

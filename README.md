@@ -1,8 +1,8 @@
-# PayMate - AI-Enhanced Digital Payment Platform
+# PayMate 2.0 - AI-Enhanced Digital Payment Platform
 
-![PayMate Banner](https://placehold.co/1200x400.png)
+![PayMate 2.0 Banner](https://placehold.co/1200x400.png)
 
-**PayMate** is a feature-rich, full-stack web application prototype for a modern digital payment platform. Built with Next.js, ShadCN UI, and Google's Genkit, it provides a seamless and secure user experience for managing financial transactions. The application integrates advanced AI capabilities, including a conversational support chatbot and smart transaction suggestions, to deliver an intelligent and intuitive payment solution.
+**PayMate 2.0** is a feature-rich, full-stack web application prototype for a modern digital payment platform. Built with Next.js, ShadCN UI, and Google's Genkit, it provides a seamless and secure user experience for managing financial transactions. The application integrates advanced AI capabilities, including a conversational support chatbot and smart transaction suggestions, to deliver an intelligent and intuitive payment solution.
 
 ## ✨ Core Features
 
@@ -120,9 +120,9 @@ src
 
 ## 🤖 AI Features Overview
 
-PayMate leverages **Genkit** and **Google Gemini** to provide intelligent features:
+PayMate 2.0 leverages **Genkit** and **Google Gemini** to provide intelligent features:
 
-1.  **AI Chatbot Support (`/support`)**: The `ai-chatbot-support.ts` flow defines a prompt that gives the Gemini model a persona as a helpful support agent for PayMate. The model is provided with a summary of the app's features and can guide users to the correct pages to perform actions.
+1.  **AI Chatbot Support (`/support`)**: The `ai-chatbot-support.ts` flow defines a prompt that gives the Gemini model a persona as a helpful support agent for PayMate 2.0. The model is provided with a summary of the app's features and can guide users to the correct pages to perform actions.
 
 2.  **Smart Transaction Suggestions (Dashboard)**: The `smart-transaction-suggestions.ts` flow analyzes a user's (mock) transaction history and uses an AI prompt to generate personalized suggestions for future payments, such as recurring bills or frequent purchases.
 
