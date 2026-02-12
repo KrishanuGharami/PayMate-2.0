@@ -1,4 +1,3 @@
-
 'use client'
 
 import {
@@ -9,10 +8,15 @@ import {
   type CreateOrderData,
   type CreateOrderActions
 } from '@paypal/react-paypal-js'
-import { useToast } from '@/hooks/use-toast'
 
-export const PayPalButtonsWrapper = ({ amount: inrAmount }: { amount: string }) => {
-  const { toast } = useToast()
+interface PayPalButtonsWrapperProps {
+  amount: string;
+  onProcessing: () => void;
+  onSuccess: (details: { transactionId: string }) => void;
+  onError: (error: { message: string }) => void;
+}
+
+export const PayPalButtonsWrapper = ({ amount: inrAmount, onProcessing, onSuccess, onError }: PayPalButtonsWrapperProps) => {
 
   // For this prototype, we'll use a fixed conversion rate.
   // In a real-world application, you would fetch this from a reliable currency conversion API.
@@ -39,21 +43,17 @@ export const PayPalButtonsWrapper = ({ amount: inrAmount }: { amount: string }) 
     // This function captures the funds from the transaction.
     // It is called after the buyer approves the payment.
     return actions.order!.capture().then(function (details) {
-      toast({
-        variant: 'success',
-        title: 'Payment Successful!',
-        description: `PayPal Order ID: ${data.orderID}`,
-      })
+      onSuccess({ transactionId: data.orderID });
     });
   }
   
-  const onError = (err: any) => {
-     toast({
-        variant: 'destructive',
-        title: 'PayPal Error',
-        description: 'An error occurred with the PayPal transaction.',
-      })
-      console.error("PayPal Checkout onError", err);
+  const onClick = () => {
+    onProcessing();
+  }
+
+  const handleOnError = (err: any) => {
+     onError({ message: 'An error occurred with the PayPal transaction or it was cancelled.' });
+     console.error("PayPal Checkout onError", err);
   }
 
   return (
@@ -67,7 +67,8 @@ export const PayPalButtonsWrapper = ({ amount: inrAmount }: { amount: string }) 
         style={{ layout: 'vertical' }}
         createOrder={createOrder}
         onApprove={onApprove}
-        onError={onError}
+        onError={handleOnError}
+        onClick={onClick}
       />
     </PayPalScriptProvider>
   )

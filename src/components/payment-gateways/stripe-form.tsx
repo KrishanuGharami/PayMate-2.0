@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState } from 'react'
@@ -10,7 +9,6 @@ import {
   useElements,
 } from '@stripe/react-stripe-js'
 import { Button } from '@/components/ui/button'
-import { useToast } from '@/hooks/use-toast'
 import { Loader2 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 
@@ -18,21 +16,30 @@ const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 )
 
-const CheckoutForm = ({ amount }: { amount: number }) => {
+interface CheckoutFormProps {
+    amount: number;
+    onProcessing: () => void;
+    onSuccess: (details: { transactionId: string }) => void;
+    onError: (error: { message: string }) => void;
+}
+
+
+const CheckoutForm = ({ amount, onProcessing, onSuccess, onError }: CheckoutFormProps) => {
   const stripe = useStripe()
   const elements = useElements()
-  const { toast } = useToast()
   const { theme } = useTheme()
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
-    setIsLoading(true)
 
     if (!stripe || !elements) {
-      setIsLoading(false)
+      onError({ message: "Stripe.js has not loaded yet." });
       return
     }
+
+    setIsLoading(true)
+    onProcessing();
 
     try {
         const response = await fetch('/api/payment/stripe/create-payment-intent', {
@@ -51,18 +58,17 @@ const CheckoutForm = ({ amount }: { amount: number }) => {
         // and simulate a successful payment.
         if (clientSecret.startsWith('mock_pi_')) {
             console.log("Mock payment successful for Stripe.");
-            toast({
-                variant: 'success',
-                title: 'Payment Successful!',
-                description: `Mock Payment ID: ${clientSecret.split('_secret_')[0]}`,
-            });
-            setIsLoading(false);
+            setTimeout(() => {
+                onSuccess({ transactionId: `MOCK_STRIPE_${clientSecret.split('_secret_')[0]}` });
+                setIsLoading(false);
+            }, 1500); // Simulate network delay
             return;
         }
 
         const cardElement = elements.getElement(CardElement)
         if (!cardElement) {
             setIsLoading(false);
+            onError({ message: "Card element not found." });
             return;
         }
 
@@ -73,24 +79,12 @@ const CheckoutForm = ({ amount }: { amount: number }) => {
         });
 
         if (error) {
-            toast({
-                variant: 'destructive',
-                title: 'Payment failed',
-                description: error.message,
-            });
+            onError({ message: error.message || 'An unknown payment error occurred.' });
         } else if (paymentIntent.status === 'succeeded') {
-            toast({
-                variant: 'success',
-                title: 'Payment Successful!',
-                description: `Payment ID: ${paymentIntent.id}`,
-            });
+            onSuccess({ transactionId: paymentIntent.id });
         }
     } catch (e: any) {
-         toast({
-            variant: 'destructive',
-            title: 'An error occurred',
-            description: e.message,
-        })
+         onError({ message: e.message || 'An unexpected error occurred.' });
     } finally {
          setIsLoading(false)
     }
@@ -123,8 +117,20 @@ const CheckoutForm = ({ amount }: { amount: number }) => {
   )
 }
 
-export const StripeForm = ({ amount }: { amount: number }) => (
+interface StripeFormProps {
+    amount: number;
+    onProcessing: () => void;
+    onSuccess: (details: { transactionId: string }) => void;
+    onError: (error: { message: string }) => void;
+}
+
+export const StripeForm = ({ amount, onProcessing, onSuccess, onError }: StripeFormProps) => (
   <Elements stripe={stripePromise}>
-    <CheckoutForm amount={amount} />
+    <CheckoutForm 
+      amount={amount} 
+      onProcessing={onProcessing}
+      onSuccess={onSuccess}
+      onError={onError}
+    />
   </Elements>
 )

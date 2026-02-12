@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { useToast } from '@/hooks/use-toast'
 import { Loader2 } from 'lucide-react'
 
 // This is a simplified type definition for Razorpay options.
@@ -15,6 +14,9 @@ interface RazorpayOptions {
   description: string;
   order_id: string;
   handler: (response: { razorpay_payment_id: string }) => void;
+  modal: {
+    ondismiss: () => void;
+  };
   prefill: {
     name: string;
     email: string;
@@ -33,42 +35,47 @@ declare global {
   }
 }
 
+interface RazorpayButtonProps {
+    amount: number;
+    onProcessing: () => void;
+    onSuccess: (details: { transactionId: string }) => void;
+    onError: (error: { message: string }) => void;
+}
 
-export const RazorpayButton = ({ amount }: { amount: number }) => {
-  const { toast } = useToast()
-  const [isLoading, setIsLoading] = useState(false);
+
+export const RazorpayButton = ({ amount, onProcessing, onSuccess, onError }: RazorpayButtonProps) => {
+  const [isLoading, setIsLoading] = useState(true);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
     script.async = true;
-    script.onload = () => setIsScriptLoaded(true);
+    script.onload = () => {
+        setIsScriptLoaded(true);
+        setIsLoading(false);
+    };
     script.onerror = () => {
-        toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: 'Could not load Razorpay script. Please check your network connection.',
-        })
+        onError({ message: 'Could not load Razorpay script. Please check your network connection.'});
+        setIsLoading(false);
     }
     document.body.appendChild(script);
 
     return () => {
-      document.body.removeChild(script);
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
     };
-  }, [toast]);
+  }, [onError]);
 
   const handlePayment = async () => {
     if (!isScriptLoaded) {
-      toast({
-        variant: 'destructive',
-        title: 'Razorpay not loaded',
-        description: 'Please wait a moment and try again.',
-      });
+      onError({ message: 'Razorpay script not loaded. Please wait and try again.'});
       return;
     }
     
     setIsLoading(true);
+    onProcessing();
 
     try {
         // 1. Create an order on your server
@@ -93,11 +100,12 @@ export const RazorpayButton = ({ amount }: { amount: number }) => {
             description: 'Transaction',
             order_id: order.id,
             handler: function (response) {
-                toast({
-                    variant: 'success',
-                    title: 'Payment Successful!',
-                    description: `Razorpay Payment ID: ${response.razorpay_payment_id}`,
-                });
+                onSuccess({ transactionId: response.razorpay_payment_id });
+            },
+            modal: {
+                ondismiss: function() {
+                    onError({ message: 'Payment modal was closed.' });
+                }
             },
             prefill: {
                 name: 'Krishanu Gharami',
@@ -113,12 +121,7 @@ export const RazorpayButton = ({ amount }: { amount: number }) => {
         rzp.open();
 
     } catch (error) {
-        console.error('Razorpay payment error:', error);
-        toast({
-            variant: 'destructive',
-            title: 'Payment Failed',
-            description: 'Could not initiate Razorpay payment.',
-        });
+        onError({ message: 'Could not initiate Razorpay payment.' });
     } finally {
         setIsLoading(false);
     }

@@ -1,22 +1,92 @@
-
 'use client'
 
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { StripeForm } from '@/components/payment-gateways/stripe-form'
 import { PayPalButtonsWrapper } from '@/components/payment-gateways/paypal-button'
 import { RazorpayButton } from '@/components/payment-gateways/razorpay-button'
-import { CreditCard } from 'lucide-react'
+import { CreditCard, Loader2, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
 import Image from 'next/image'
+import { Button } from '@/components/ui/button'
+
+type PaymentStatus = 'idle' | 'processing' | 'succeeded' | 'failed';
+type PaymentError = { message: string };
+type PaymentSuccess = { transactionId: string };
 
 export function PaymentPageClient() {
+    const router = useRouter();
     const searchParams = useSearchParams()
     const amount = searchParams.get('amount') || '0';
     const recipient = searchParams.get('recipient');
     const description = searchParams.get('description');
 
+    const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('idle');
+    const [paymentError, setPaymentError] = useState<PaymentError | null>(null);
+    const [paymentSuccess, setPaymentSuccess] = useState<PaymentSuccess | null>(null);
+
     const amountInCents = Math.round(parseFloat(amount) * 100);
+
+    const handleSuccess = (details: PaymentSuccess) => {
+        setPaymentSuccess(details);
+        setPaymentStatus('succeeded');
+    };
+
+    const handleError = (error: PaymentError) => {
+        setPaymentError(error);
+        setPaymentStatus('failed');
+    };
+
+    const handleRetry = () => {
+        setPaymentStatus('idle');
+        setPaymentError(null);
+        setPaymentSuccess(null);
+    };
+
+    const handleNewPayment = () => {
+        router.push('/dashboard');
+    }
+
+    if (paymentStatus === 'processing') {
+        return (
+            <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                <Loader2 className="h-16 w-16 animate-spin text-primary mb-6" />
+                <h1 className="text-2xl font-bold tracking-tight">Processing Payment...</h1>
+                <p className="text-muted-foreground mt-2">Please do not close or refresh the page.</p>
+            </div>
+        );
+    }
+    
+    if (paymentStatus === 'succeeded') {
+        return (
+            <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                <CheckCircle className="h-16 w-16 text-success mb-6" />
+                <h1 className="text-2xl font-bold tracking-tight">Payment Successful!</h1>
+                <p className="text-muted-foreground mt-2">Your payment of <span className="font-bold text-primary">₹{amount}</span> has been completed.</p>
+                {paymentSuccess?.transactionId && (
+                    <p className="text-sm text-muted-foreground mt-2">Transaction ID: {paymentSuccess.transactionId}</p>
+                )}
+                <Button onClick={handleNewPayment} className="mt-8">
+                    Make Another Payment
+                </Button>
+            </div>
+        );
+    }
+
+    if (paymentStatus === 'failed') {
+        return (
+            <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                <XCircle className="h-16 w-16 text-destructive mb-6" />
+                <h1 className="text-2xl font-bold tracking-tight">Transaction Failed</h1>
+                <p className="text-muted-foreground mt-2">{paymentError?.message || 'An unexpected error occurred.'}</p>
+                <Button onClick={handleRetry} className="mt-8">
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Retry Payment
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 h-full">
@@ -44,13 +114,28 @@ export function PaymentPageClient() {
                                 </TabsTrigger>
                             </TabsList>
                             <TabsContent value="stripe" className="mt-6">
-                               <StripeForm amount={amountInCents} />
+                               <StripeForm 
+                                 amount={amountInCents} 
+                                 onProcessing={() => setPaymentStatus('processing')}
+                                 onSuccess={handleSuccess}
+                                 onError={handleError}
+                               />
                             </TabsContent>
                             <TabsContent value="paypal" className="mt-6">
-                                <PayPalButtonsWrapper amount={amount} />
+                                <PayPalButtonsWrapper 
+                                  amount={amount} 
+                                  onProcessing={() => setPaymentStatus('processing')}
+                                  onSuccess={handleSuccess}
+                                  onError={handleError}
+                                />
                             </TabsContent>
                             <TabsContent value="razorpay" className="mt-6">
-                                <RazorpayButton amount={amountInCents} />
+                                <RazorpayButton 
+                                  amount={amountInCents} 
+                                  onProcessing={() => setPaymentStatus('processing')}
+                                  onSuccess={handleSuccess}
+                                  onError={handleError}
+                                />
                             </TabsContent>
                         </Tabs>
                     </CardContent>
