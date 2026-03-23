@@ -38,7 +38,7 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 250 75% 60%;
  
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
@@ -64,7 +64,9 @@
     --card: 240 5.9% 10%;
     --card-foreground: 210 40% 98%;
  
-    --popover: 240 5.9% 10%;
+    --popover: 240 5.9% 10% {
+      @apply shadow-2xl;
+    };
     --popover-foreground: 210 40% 98%;
  
     --primary: 250 75% 60%;
@@ -114,5 +116,22 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 3s ease infinite;
+  }
+
+  @keyframes gradient-x {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  @keyframes scan {
+    0%, 100% { top: 0%; }
+    50% { top: 100%; }
   }
 }
