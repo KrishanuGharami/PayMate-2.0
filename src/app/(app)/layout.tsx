@@ -1,9 +1,12 @@
+
 'use client';
 
 import { AppSidebar } from '@/components/app-sidebar';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUser, useAuth } from '@/firebase';
+import { Loader2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,8 +18,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from '@/components/ui/button';
 
-const IDLE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
-const WARNING_TIMEOUT_MS = 1 * 60 * 1000; // 1 minute warning
+const IDLE_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes for Phase II
+const WARNING_TIMEOUT_MS = 2 * 60 * 1000; // 2 minute warning
 
 export default function AppLayout({
   children,
@@ -24,14 +27,24 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const { user, loading } = useUser();
+  const auth = useAuth();
   const [isIdle, setIsIdle] = useState(false);
   
-  const handleLogout = useCallback(() => {
-    localStorage.removeItem('user');
+  const handleLogout = useCallback(async () => {
+    await auth.signOut();
     router.push('/login');
-  }, [router]);
+  }, [auth, router]);
 
   useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  useEffect(() => {
+    if (!user) return;
+
     let idleTimer: NodeJS.Timeout;
     let warningTimer: NodeJS.Timeout;
 
@@ -59,8 +72,18 @@ export default function AppLayout({
       clearTimeout(idleTimer);
       clearTimeout(warningTimer);
     };
-  }, [handleLogout]);
+  }, [handleLogout, user]);
 
+  if (loading) {
+    return (
+      <div className="h-screen w-screen flex flex-col items-center justify-center gap-4 bg-background">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="text-sm font-medium animate-pulse text-muted-foreground">Initializing PayMate Security Engine...</p>
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   return (
     <SidebarProvider>
@@ -70,16 +93,16 @@ export default function AppLayout({
       </SidebarInset>
 
        <AlertDialog open={isIdle}>
-        <AlertDialogContent>
+        <AlertDialogContent className="border-primary/20 shadow-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you still there?</AlertDialogTitle>
+            <AlertDialogTitle>Security Check: Still there?</AlertDialogTitle>
             <AlertDialogDescription>
-              You've been inactive for a while. For your security, you will be logged out automatically soon.
+              You've been inactive for a while. To protect your financial data, we'll automatically sign you out shortly.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <Button variant="outline" onClick={handleLogout}>Logout</Button>
-            <AlertDialogAction onClick={() => setIsIdle(false)}>Stay Signed In</AlertDialogAction>
+            <Button variant="outline" onClick={handleLogout}>Sign Out Now</Button>
+            <AlertDialogAction onClick={() => setIsIdle(false)} className="bg-primary hover:bg-primary/90">Stay Signed In</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

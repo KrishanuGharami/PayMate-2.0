@@ -1,0 +1,40 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores extended information about the user account.",
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "type": "string",
+          "description": "The user's full name from Google."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's primary email address."
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "URL to the user's profile picture."
+        },
+        "lastLogin": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp of the last successful login."
+        }
+      },
+      "required": ["email"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "The private user profile document."
+    }
+  }
+}

@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -24,7 +25,10 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Wallet } from 'lucide-react';
+import { Wallet, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { useAuth } from '@/firebase';
+import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 const formSchema = z.object({
   fullName: z.string().min(1, { message: 'Full name is required.' }),
@@ -37,6 +41,9 @@ const formSchema = z.object({
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
+  const [loading, setLoading] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -46,21 +53,48 @@ export default function SignupPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setLoading(true);
     try {
-      localStorage.setItem('user', JSON.stringify(values));
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      await updateProfile(userCredential.user, { displayName: values.fullName });
+      
       toast({
         title: 'Account Created!',
-        description: 'You can now log in with your new account.',
+        description: 'Welcome to the future of payments.',
         variant: 'success',
       });
-      router.push('/login');
-    } catch (error) {
+      router.push('/dashboard');
+    } catch (error: any) {
       toast({
         title: 'Signup Failed',
-        description: 'Could not save your details. Please try again.',
+        description: error.message || 'Something went wrong. Please try again.',
         variant: 'destructive',
       });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleGoogleSignUp() {
+    setLoading(true);
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      toast({
+        title: 'Welcome to PayMate 2.0',
+        description: 'Account successfully linked with Google.',
+        variant: 'success'
+      });
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast({
+        title: 'Google Auth Error',
+        description: error.message || 'Could not connect to Google.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -74,9 +108,9 @@ export default function SignupPage() {
             </div>
             <h1 className="text-3xl font-bold text-primary">PayMate 2.0</h1>
           </div>
-          <CardTitle className="text-2xl">Create an account</CardTitle>
+          <CardTitle className="text-2xl">Start Your Journey</CardTitle>
           <CardDescription>
-            Enter your information to create a new account
+            Join thousands of users on a secure platform
           </CardDescription>
         </CardHeader>
         <Form {...form}>
@@ -125,11 +159,23 @@ export default function SignupPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Create account
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Create Secure Account
               </Button>
-              <Button variant="outline" className="w-full">
-                Sign up with Google
+              <div className="relative my-2">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">Or</span>
+                </div>
+              </div>
+              <Button type="button" variant="outline" className="w-full" onClick={handleGoogleSignUp} disabled={loading}>
+                <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+                  <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
+                </svg>
+                Google Sign-Up
               </Button>
             </CardContent>
           </form>
@@ -137,8 +183,8 @@ export default function SignupPage() {
         <CardFooter className="text-center text-sm">
           <p className="w-full">
             Already have an account?{' '}
-            <Link href="/login" className="underline font-semibold">
-              Login
+            <Link href="/login" className="underline font-semibold text-primary">
+              Sign In
             </Link>
           </p>
         </CardFooter>

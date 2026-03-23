@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -16,14 +17,6 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import {
   Form,
   FormControl,
   FormField,
@@ -32,15 +25,10 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Wallet, ShieldCheck } from 'lucide-react';
-import React from 'react';
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSeparator,
-  InputOTPSlot,
-} from "@/components/ui/input-otp"
-
+import { Wallet, ShieldCheck, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useAuth, useUser } from '@/firebase';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -50,8 +38,15 @@ const formSchema = z.object({
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [isMfaOpen, setIsMfaOpen] = React.useState(false);
-  const [otpValue, setOtpValue] = React.useState('');
+  const auth = useAuth();
+  const { user, loading: userLoading } = useUser();
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!userLoading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, userLoading, router]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -61,155 +56,140 @@ export default function LoginPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    const storedUser = localStorage.getItem('user');
-
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      if (
-        user.email === values.email &&
-        user.password === values.password
-      ) {
-        // Instead of logging in directly, open MFA dialog
-        setIsMfaOpen(true);
-      } else {
-        toast({
-          title: 'Invalid Credentials',
-          description: 'Please check your email and password.',
-          variant: 'destructive',
-        });
-      }
-    } else {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, values.email, values.password);
       toast({
-        title: 'No User Found',
-        description: 'Please sign up to create an account.',
+        title: 'Welcome Back',
+        description: 'Successfully signed in.',
+        variant: 'success'
+      });
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast({
+        title: 'Login Failed',
+        description: error.message || 'Check your credentials and try again.',
         variant: 'destructive',
       });
+    } finally {
+      setLoading(false);
     }
   }
 
-  function handleVerifyOtp() {
-    // For this prototype, we'll use a hardcoded OTP.
-    if (otpValue === '123456') {
+  async function handleGoogleSignIn() {
+    setLoading(true);
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
       toast({
-        title: 'Login Successful',
-        description: 'Welcome back!',
+        title: 'Google Login Successful',
+        description: 'Welcome to PayMate 2.0!',
         variant: 'success'
       });
-      setIsMfaOpen(false);
       router.push('/dashboard');
-    } else {
+    } catch (error: any) {
       toast({
-        title: 'Invalid OTP',
-        description: 'The one-time password you entered is incorrect.',
+        title: 'Google Sign-In Error',
+        description: error.message || 'Could not connect to Google.',
         variant: 'destructive',
       });
+    } finally {
+      setLoading(false);
     }
+  }
+
+  if (userLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
-    <>
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-background-end p-4">
-        <Card className="w-full max-w-md mx-auto shadow-2xl bg-card/70 backdrop-blur-xl border-border/20">
-          <CardHeader className="space-y-1 text-center">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="p-2.5 rounded-lg bg-primary text-primary-foreground">
-                <Wallet size={24} />
-              </div>
-              <h1 className="text-3xl font-bold text-primary">PayMate 2.0</h1>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-background-end p-4">
+      <Card className="w-full max-w-md mx-auto shadow-2xl bg-card/70 backdrop-blur-xl border-border/20">
+        <CardHeader className="space-y-1 text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="p-2.5 rounded-lg bg-primary text-primary-foreground">
+              <Wallet size={24} />
             </div>
-            <CardTitle className="text-2xl">Welcome Back!</CardTitle>
-            <CardDescription>
-              Enter your credentials to access your account
-            </CardDescription>
-          </CardHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
-              <CardContent className="grid gap-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="m@example.com"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="flex items-center">
-                          <FormLabel>Password</FormLabel>
-                          <Link href="#" className="ml-auto inline-block text-sm underline">
-                              Forgot your password?
-                          </Link>
-                      </div>
-                      <FormControl>
-                        <Input type="password" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full">
-                  Login
-                </Button>
-                <Button variant="outline" className="w-full">
-                  Login with Google
-                </Button>
-              </CardContent>
-            </form>
-          </Form>
-          <CardFooter className="text-center text-sm">
-            <p className="w-full">
-              Don&apos;t have an account?{' '}
-              <Link href="/signup" className="underline font-semibold">
-                Sign up
-              </Link>
-            </p>
-          </CardFooter>
-        </Card>
-      </div>
-
-      <Dialog open={isMfaOpen} onOpenChange={setIsMfaOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><ShieldCheck className="text-primary"/> Two-Factor Authentication</DialogTitle>
-            <DialogDescription>
-              For your security, please enter the 6-digit code from your authenticator app. (Hint: 123456)
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex items-center justify-center space-y-4 pt-4">
-             <InputOTP maxLength={6} value={otpValue} onChange={(value) => setOtpValue(value)}>
-                <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                </InputOTPGroup>
-                <InputOTPSeparator />
-                <InputOTPGroup>
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                </InputOTPGroup>
-            </InputOTP>
+            <h1 className="text-3xl font-bold text-primary">PayMate 2.0</h1>
           </div>
-          <DialogFooter className="sm:justify-between flex-col-reverse sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => setIsMfaOpen(false)}>Cancel</Button>
-            <Button onClick={handleVerifyOtp} disabled={otpValue.length < 6}>Verify Code</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+          <CardTitle className="text-2xl">Welcome Back!</CardTitle>
+          <CardDescription>
+            Securely access your digital wallet
+          </CardDescription>
+        </CardHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <CardContent className="grid gap-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="m@example.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center">
+                        <FormLabel>Password</FormLabel>
+                        <Link href="#" className="ml-auto inline-block text-sm underline text-muted-foreground">
+                            Forgot?
+                        </Link>
+                    </div>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Sign In
+              </Button>
+              <div className="relative my-2">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
+              <Button type="button" variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={loading}>
+                <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+                  <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
+                </svg>
+                Google Authentication
+              </Button>
+            </CardContent>
+          </form>
+        </Form>
+        <CardFooter className="text-center text-sm">
+          <p className="w-full">
+            Don&apos;t have an account?{' '}
+            <Link href="/signup" className="underline font-semibold text-primary">
+              Join PayMate
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }

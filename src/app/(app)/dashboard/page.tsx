@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState, useEffect, useRef } from "react"
@@ -5,7 +6,7 @@ import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ArrowUpRight, QrCode, User, Repeat, Wallet, CameraOff, AlertCircle, Upload, Zap, Search } from "lucide-react"
+import { ArrowUpRight, QrCode, Wallet, CameraOff, Upload, Zap, Search, Loader2 } from "lucide-react"
 import { SmartSuggestions } from "./smart-suggestions"
 import { RecentTransactions } from "./recent-transactions"
 import { Label } from "@/components/ui/label"
@@ -19,33 +20,19 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { useUser } from "@/firebase"
 
 export default function DashboardPage() {
   const { toast } = useToast();
+  const { user } = useUser();
   const [upiId, setUpiId] = useState('');
   const [amount, setAmount] = useState('');
-  const [userName, setUserName] = useState('');
   
   const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-        try {
-            const user = JSON.parse(storedUser);
-            if (user && user.fullName) {
-                setUserName(user.fullName);
-            }
-        } catch (e) {
-            console.error("Failed to parse user from localStorage", e);
-        }
-    }
-  }, []);
 
   useEffect(() => {
     if (isQrDialogOpen) {
@@ -120,11 +107,11 @@ export default function DashboardPage() {
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
             <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">PayMate 2.0</h1>
-            <p className="text-muted-foreground">Welcome back, {userName}. Your finances are secured.</p>
+            <p className="text-muted-foreground">Welcome back, <span className="text-foreground font-semibold">{user?.displayName?.split(' ')[0] || 'User'}</span>. Your finances are secured.</p>
         </div>
         <div className="flex items-center gap-2">
-            <div className="bg-primary/10 px-3 py-1 rounded-full text-xs font-bold text-primary flex items-center gap-1">
-                <Zap className="h-3 w-3" /> QUICK ACCESS
+            <div className="bg-primary/10 px-3 py-1 rounded-full text-xs font-bold text-primary flex items-center gap-1 border border-primary/20">
+                <Zap className="h-3 w-3" /> SECURE MODE ACTIVE
             </div>
         </div>
       </header>
@@ -132,15 +119,15 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           <Card className="shadow-xl bg-gradient-to-br from-card to-card/50 border-primary/10 overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-8 opacity-10">
+            <div className="absolute top-0 right-0 p-8 opacity-5">
                 <Wallet className="h-32 w-32 rotate-12" />
             </div>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-muted-foreground text-sm font-bold uppercase tracking-widest">Available Balance</CardTitle>
+                <CardTitle className="text-muted-foreground text-xs font-bold uppercase tracking-widest">Available Balance</CardTitle>
                 <CardDescription>Real-time consolidated view</CardDescription>
               </div>
-              <div className="h-10 w-10 bg-primary/20 rounded-lg flex items-center justify-center">
+              <div className="h-10 w-10 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
                 <Wallet className="h-6 w-6 text-primary"/>
               </div>
             </CardHeader>
@@ -209,7 +196,6 @@ export default function DashboardPage() {
                           <div className="relative w-full aspect-square max-w-[300px] bg-muted rounded-2xl overflow-hidden border-4 border-muted flex items-center justify-center">
                               <video ref={videoRef} className={`w-full h-full object-cover transition-opacity duration-500 ${isScanning ? 'opacity-40 grayscale' : 'opacity-100'}`} autoPlay muted playsInline />
                               
-                              {/* Scanning Overlay */}
                               {isQrDialogOpen && !isScanning && hasCameraPermission !== false && (
                                 <div className="absolute inset-0 pointer-events-none border-[40px] border-black/40">
                                     <div className="h-full w-full border-2 border-primary/50 relative">
@@ -250,11 +236,6 @@ export default function DashboardPage() {
                   </DialogContent>
                 </Dialog>
               </div>
-              <div className="pt-4 border-t border-primary/5">
-                <Button variant="ghost" className="w-full text-xs font-bold text-muted-foreground hover:text-primary transition-colors">
-                    <Repeat className="mr-2 h-3 w-3" /> VIEW SAVED PAYEES & FAVORITES
-                </Button>
-              </div>
             </CardContent>
           </Card>
 
@@ -265,20 +246,6 @@ export default function DashboardPage() {
           <RecentTransactions />
         </div>
       </div>
-      <style jsx global>{`
-        @keyframes scan {
-            0%, 100% { top: 0%; }
-            50% { top: 100%; }
-        }
-        @keyframes gradient-x {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-        .animate-gradient-x {
-            background-size: 200% 200%;
-            animation: gradient-x 3s ease infinite;
-        }
-      `}</style>
     </div>
   )
 }
