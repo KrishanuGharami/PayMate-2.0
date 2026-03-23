@@ -46,8 +46,8 @@ Follow these instructions to set up and run the project locally for development.
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/paymate.git
-cd paymate
+git clone https://github.com/KrishanuGharami/PayMate-2.0.git
+cd PayMate-2.0
 ```
 
 ### 2. Install Dependencies
