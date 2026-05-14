@@ -246,8 +246,7 @@ firebase deploy --only firestore
 | **Session Timeout** | 5-minute idle timer with warning dialog |
 | **Data Validation** | Zod schemas on all API inputs |
 
----<img width="1865" height="893" alt="Screenshot 2026-05-15 004100" src="https://github.com/user-attachments/assets/e590ffac-068a-40a6-9675-f54266b9b9fa" />
-
+---
 
 <p align="center">
   Built with ❤️ by <a href="https://github.com/KrishanuGharami">Krishanu Gharami</a>
