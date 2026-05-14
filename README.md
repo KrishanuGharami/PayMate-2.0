@@ -1,6 +1,6 @@
 # PayMate 2.0 — AI-Enhanced Digital Payment Platform
 
-![PayMate Banner](https://github.com/user-attachments/assets/a9933391-fd54-4f54-b910-e30790473ac6)
+![PayMate Banner](https://github.com/user-attachments/assets/5e4b0c8a-ec3e-4439-8947-4acd3547fb3b)
 
 **PayMate 2.0** is a production-grade, full-stack digital payment platform built with Next.js, Firebase, Clerk, and Google Genkit. It features enterprise-level security with JWT-based session management, AI-powered fraud detection, real-time transaction tracking via Firestore, and a beautiful dark-mode UI with a signature purple-glow aesthetic.
 
@@ -246,13 +246,6 @@ firebase deploy --only firestore
 | **Session Timeout** | 5-minute idle timer with warning dialog |
 | **Data Validation** | Zod schemas on all API inputs |
 
----
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
----
 
 <p align="center">
   Built with ❤️ by <a href="https://github.com/KrishanuGharami">Krishanu Gharami</a>
