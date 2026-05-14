@@ -57,48 +57,9 @@ export function PaymentPageClient() {
         setLastPaymentAttempt(now);
         setPaymentStatus('processing');
 
-        // 2. Fraud Detection
-        try {
-            // Mock user history for the prototype
-            const fraudCheckInput: FraudDetectionInput = {
-                amount: numericAmount,
-                recipientId: recipient || 'unknown',
-                transactionTime: new Date().toISOString(),
-                userHistory: {
-                    averageAmount: 500,
-                    commonRecipients: ['mom@upi', 'friend@paymate', 'Starbucks'],
-                    unusualLocation: numericAmount > 20000, // Mock: flag if amount is high
-                },
-            };
-            
-            const fraudResult = await detectFraud(fraudCheckInput);
-
-            if (fraudResult.isFraudulent) {
-                handleError({
-                    message: `This transaction has been blocked for security reasons. Reason: ${fraudResult.reason}`,
-                    isFraud: true,
-                });
-                return false; // Stop the payment process
-            }
-
-            // If not fraudulent, proceed.
-            toast({
-                title: 'Security Scan Complete',
-                description: 'Checks passed. Finalizing payment...',
-                variant: 'success',
-            });
-            return true;
-
-        } catch (error) {
-            console.error("Fraud detection error:", error);
-            toast({
-                title: 'Security Scan Failed',
-                description: 'Could not verify transaction security. Proceeding with caution.',
-                variant: 'warning',
-            });
-            // For this prototype, we'll allow payment to proceed even if the scan fails.
-            return true;
-        }
+        // Note: AI Fraud Detection is now handled securely on the server
+        // inside the /api/payments/initiate route.
+        return true;
     };
 
 
@@ -150,10 +111,15 @@ export function PaymentPageClient() {
                     {paymentError?.isFraud ? 'Transaction Blocked' : 'Transaction Failed'}
                 </h1>
                 <p className="text-muted-foreground mt-2 max-w-md">{paymentError?.message || 'An unexpected error occurred.'}</p>
-                <Button onClick={handleRetry} className="mt-8">
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Try Again
-                </Button>
+                <div className="flex gap-4 mt-8">
+                    <Button onClick={handleRetry} variant="outline">
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Try Again
+                    </Button>
+                    <Button onClick={() => router.push(`/support?issue=PaymentFailed&amount=${amount}&recipient=${recipient}`)}>
+                        Get AI Assistance
+                    </Button>
+                </div>
             </div>
         );
     }

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,11 +19,27 @@ type Message = {
     escalate?: boolean;
 };
 
-export default function SupportPage() {
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [input, setInput] = useState('');
+function SupportChatClient() {
+    const searchParams = useSearchParams();
+    const issue = searchParams.get('issue');
+    const amount = searchParams.get('amount');
+    const recipient = searchParams.get('recipient');
+    
+    const initialMessage = issue === 'PaymentFailed' 
+        ? `Hello, I'm having trouble with my payment of ₹${amount} to ${recipient}. Can you help me understand why it failed?`
+        : '';
+
+    const [messages, setMessages] = useState<Message[]>(initialMessage ? [{ id: '0', text: initialMessage, sender: 'user' }] : []);
+    const [input, setInput] = useState(initialMessage ? '' : '');
     const [isLoading, setIsLoading] = useState(false);
     const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+    // Auto-trigger the first message if passed from params
+    useEffect(() => {
+        if (initialMessage && messages.length === 1 && !isLoading) {
+             handleSend(initialMessage);
+        }
+    }, [initialMessage]);
 
     useEffect(() => {
         if (scrollAreaRef.current) {
@@ -33,17 +50,27 @@ export default function SupportPage() {
         }
     }, [messages]);
 
-    const handleSend = async () => {
-        if (!input.trim()) return;
+    const handleSend = async (overrideText?: string) => {
+        const textToProcess = overrideText || input;
+        if (!textToProcess.trim()) return;
         
-        const userMessage: Message = { id: Date.now().toString(), text: input, sender: 'user' };
-        setMessages(prev => [...prev, userMessage]);
-        const currentInput = input;
+        if (!overrideText) {
+            const userMessage: Message = { id: Date.now().toString(), text: textToProcess, sender: 'user' };
+            setMessages(prev => [...prev, userMessage]);
+        }
+        
         setInput('');
         setIsLoading(true);
 
+        const transactionDetails = issue === 'PaymentFailed' 
+            ? `The user just tried to send ₹${amount} to ${recipient} but it failed or was blocked by fraud detection.` 
+            : undefined;
+
         try {
-            const response: AIChatbotSupportOutput = await aiChatbotSupport({ query: currentInput });
+            const response: AIChatbotSupportOutput = await aiChatbotSupport({ 
+                query: textToProcess,
+                transactionDetails
+            });
             const botMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 text: response.response,
@@ -123,7 +150,7 @@ export default function SupportPage() {
                                 disabled={isLoading}
                                 className="h-11"
                             />
-                            <Button onClick={handleSend} disabled={isLoading || !input.trim()} size="icon" className="h-11 w-11 shrink-0">
+                            <Button onClick={() => handleSend()} disabled={isLoading || !input.trim()} size="icon" className="h-11 w-11 shrink-0">
                                 {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
                                 <span className="sr-only">Send</span>
                             </Button>
@@ -132,5 +159,13 @@ export default function SupportPage() {
                 </CardContent>
             </Card>
         </div>
+    )
+}
+
+export default function SupportPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-center"><Loader2 className="animate-spin mx-auto"/>Loading Support...</div>}>
+            <SupportChatClient />
+        </Suspense>
     )
 }

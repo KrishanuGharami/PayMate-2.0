@@ -64,11 +64,18 @@ const CheckoutForm = ({ amount, onInitiatePayment, onSuccess, onError }: Checkou
             }),
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            throw new Error('Failed to initiate robust payment');
+            if (response.status === 403 && data.isFraud) {
+                // Return explicitly to stop execution and let UI handle blocked view
+                setIsLoading(false);
+                onError({ message: `Transaction Blocked: ${data.reason}`, isFraud: true } as any);
+                return;
+            }
+            throw new Error(data.error || 'Failed to initiate robust payment');
         }
 
-        const data = await response.json();
         const clientSecret = "mock_pi_robust_secret_123"; // Using mock secret still for stripe confirmation logic
 
 

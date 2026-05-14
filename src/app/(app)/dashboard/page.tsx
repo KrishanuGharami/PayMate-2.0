@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { ArrowUpRight, QrCode, User, Repeat, Wallet, CameraOff, AlertCircle, Upload } from "lucide-react"
 import { SmartSuggestions } from "./smart-suggestions"
 import { RecentTransactions } from "./recent-transactions"
+import { PaymentReminders } from "./payment-reminders"
 import { Label } from "@/components/ui/label"
 import {
   Dialog,
@@ -222,6 +223,7 @@ export default function DashboardPage() {
           </Card>
 
            <SmartSuggestions />
+           <PaymentReminders />
         </div>
 
         <div className="lg:col-span-1">

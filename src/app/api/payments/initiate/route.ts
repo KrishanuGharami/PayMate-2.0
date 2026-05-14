@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 import { redis } from '@/lib/redis';
 import { z } from 'zod';
+import { detectFraud } from '@/ai/flows/fraud-detection-flow';
 
 const paymentSchema = z.object({
   amount: z.number().positive(),
@@ -29,6 +30,51 @@ export async function POST(request: Request) {
         message: 'Transaction already processed', 
         transaction: existingTransaction 
       }, { status: 200 });
+    }
+
+    // 1.5. Intelligent AI Fraud Detection (Phase 4)
+    // Query past transactions to build a user profile
+    const pastTransactions = await adminDb.collection('transactions')
+      .where('userId', '==', userId)
+      .where('status', '==', 'COMPLETED')
+      .orderBy('createdAt', 'desc')
+      .limit(20)
+      .get();
+      
+    let totalAmount = 0;
+    const recipientsSet = new Set<string>();
+    
+    pastTransactions.forEach(doc => {
+        const data = doc.data();
+        totalAmount += data.amount;
+        recipientsSet.add(data.recipient);
+    });
+
+    const averageAmount = pastTransactions.size > 0 ? totalAmount / pastTransactions.size : 0;
+    const commonRecipients = Array.from(recipientsSet);
+
+    try {
+        const fraudResult = await detectFraud({
+            amount,
+            recipientId: recipient,
+            transactionTime: new Date().toISOString(),
+            userHistory: {
+                averageAmount,
+                commonRecipients,
+                unusualLocation: false // Can be expanded with real GeoIP logic
+            }
+        });
+
+        if (fraudResult.isFraudulent) {
+            return NextResponse.json({ 
+                error: 'Transaction blocked by AI Security.', 
+                reason: fraudResult.reason,
+                riskScore: fraudResult.riskScore,
+                isFraud: true
+            }, { status: 403 });
+        }
+    } catch (fraudErr) {
+        console.error("Fraud Check Failed (continuing with caution):", fraudErr);
     }
 
     // Lock the transaction early in Redis (expires in 10 minutes)
