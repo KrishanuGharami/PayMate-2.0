@@ -4,6 +4,8 @@ export default function SignupPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-background-end p-4">
       <SignUp
+        forceRedirectUrl="/dashboard"
+        signInUrl="/login"
         appearance={{
           elements: {
             rootBox: 'mx-auto',
