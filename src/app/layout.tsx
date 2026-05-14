@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 import { ClerkProvider } from '@clerk/nextjs';
+import { clerkAppearance } from '@/lib/clerk-theme';
 
 export const metadata: Metadata = {
   title: 'PayMate 2.0',
@@ -16,6 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider
+      appearance={clerkAppearance}
       signInFallbackRedirectUrl="/dashboard"
       signUpFallbackRedirectUrl="/dashboard"
     >
