@@ -100,7 +100,7 @@ export default function HistoryPage() {
                                     <TableRow key={t.id}>
                                         <TableCell>
                                             <p className="font-medium">{t.recipient || 'Unknown'}</p>
-                                            <p className="text-sm text-muted-foreground">Transfer</p>
+                                            <p className="text-sm text-muted-foreground">{t.type || 'Transfer'}</p>
                                         </TableCell>
                                         <TableCell>{new Date(t.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</TableCell>
                                         <TableCell className={`text-right font-semibold ${t.amount > 0 ? 'text-destructive' : 'text-success'}`}>
