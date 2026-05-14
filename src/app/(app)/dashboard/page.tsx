@@ -21,31 +21,18 @@ import {
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { useUser } from "@clerk/nextjs"
 
 export default function DashboardPage() {
   const { toast } = useToast();
+  const { user } = useUser();
   const [upiId, setUpiId] = useState('');
   const [amount, setAmount] = useState('');
-  const [userName, setUserName] = useState('');
   
   const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-        try {
-            const user = JSON.parse(storedUser);
-            if (user && user.fullName) {
-                setUserName(user.fullName);
-            }
-        } catch (e) {
-            console.error("Failed to parse user from localStorage", e);
-        }
-    }
-  }, []);
 
   useEffect(() => {
     if (isQrDialogOpen) {
@@ -110,7 +97,7 @@ export default function DashboardPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-8">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight">Welcome back, {userName}!</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Welcome back, {user?.firstName || 'User'}!</h1>
         <p className="text-muted-foreground">Here&apos;s your financial overview for today.</p>
       </header>
       

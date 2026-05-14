@@ -3,7 +3,7 @@
 import { AppSidebar } from '@/components/app-sidebar';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useClerk } from '@clerk/nextjs';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,13 +23,12 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
+  const { signOut } = useClerk();
   const [isIdle, setIsIdle] = useState(false);
   
   const handleLogout = useCallback(() => {
-    localStorage.removeItem('user');
-    router.push('/login');
-  }, [router]);
+    signOut({ redirectUrl: '/login' });
+  }, [signOut]);
 
   useEffect(() => {
     let idleTimer: NodeJS.Timeout;
@@ -86,3 +85,4 @@ export default function AppLayout({
     </SidebarProvider>
   );
 }
+

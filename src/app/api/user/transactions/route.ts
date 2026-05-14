@@ -1,16 +1,14 @@
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
-import { getSession } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
 
 export async function GET(request: Request) {
   try {
-    const session = await getSession();
+    const { userId } = await auth();
     
-    if (!session) {
+    if (!userId) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const { userId } = session;
 
     const snapshot = await adminDb.collection('transactions')
       .where('userId', '==', userId)

@@ -3,7 +3,8 @@ import { adminDb } from '@/lib/firebase-admin';
 import { redis } from '@/lib/redis';
 import { z } from 'zod';
 import { detectFraud } from '@/ai/flows/fraud-detection-flow';
-import { paymentRateLimit, getSession } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
+import { paymentRateLimit } from '@/lib/auth';
 
 const paymentSchema = z.object({
   amount: z.number().positive(),
@@ -13,12 +14,11 @@ const paymentSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    // 1. Session Verification
-    const session = await getSession();
-    if (!session) {
+    // 1. Session Verification via Clerk
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 });
     }
-    const { userId } = session;
 
     // 2. Rate Limiting
     const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';

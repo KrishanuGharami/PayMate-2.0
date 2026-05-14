@@ -19,11 +19,10 @@ import {
   Receipt,
   History,
   MessageSquare,
-  UserCircle,
-  LogOut,
   Wallet,
 } from 'lucide-react';
 import { ThemeToggle } from './theme-toggle';
+import { UserButton, useUser } from '@clerk/nextjs';
 
 const menuItems = [
   { href: '/dashboard', label: 'Home', icon: Home },
@@ -35,21 +34,7 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const [userName, setUserName] = React.useState('User');
-
-  React.useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-        try {
-            const user = JSON.parse(storedUser);
-            if (user && user.fullName) {
-                setUserName(user.fullName);
-            }
-        } catch (e) {
-            console.error("Failed to parse user from localStorage", e);
-        }
-    }
-  }, []);
+  const { user } = useUser();
 
   return (
     <Sidebar>
@@ -87,23 +72,22 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
          <SidebarSeparator />
-         <SidebarMenu>
-            <SidebarMenuItem>
-                <SidebarMenuButton variant="ghost" className="justify-start">
-                    <UserCircle/>
-                    <span>{userName}</span>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-                <SidebarMenuButton asChild variant="ghost" className="justify-start text-destructive hover:text-destructive">
-                    <Link href="/login">
-                        <LogOut/>
-                        <span>Logout</span>
-                    </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-         </SidebarMenu>
+         <div className="p-3 flex items-center gap-3">
+            <UserButton
+              signInUrl="/login"
+              appearance={{
+                elements: {
+                  avatarBox: 'h-10 w-10',
+                },
+              }}
+            />
+            <div className="group-data-[collapsible=icon]:hidden">
+              <p className="text-sm font-medium">{user?.fullName || 'User'}</p>
+              <p className="text-xs text-muted-foreground">{user?.primaryEmailAddress?.emailAddress}</p>
+            </div>
+         </div>
       </SidebarFooter>
     </Sidebar>
   );
 }
+
