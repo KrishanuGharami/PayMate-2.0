@@ -1,151 +1,259 @@
-# PayMate 2.0 - AI-Enhanced Digital Payment Platform
+# PayMate 2.0 — AI-Enhanced Digital Payment Platform
 
 ![PayMate Banner](https://github.com/user-attachments/assets/a9933391-fd54-4f54-b910-e30790473ac6)
 
-**PayMate 2.0** is a feature-rich, full-stack web application prototype for a modern digital payment platform. Built with Next.js, ShadCN UI, and Google's Genkit, it provides a seamless and secure user experience for managing financial transactions. The application integrates advanced AI capabilities, including a conversational support chatbot and smart transaction suggestions, to deliver an intelligent and intuitive payment solution.
+**PayMate 2.0** is a production-grade, full-stack digital payment platform built with Next.js, Firebase, Clerk, and Google Genkit. It features enterprise-level security with JWT-based session management, AI-powered fraud detection, real-time transaction tracking via Firestore, and a beautiful dark-mode UI with a signature purple-glow aesthetic.
 
-## ✨ Core Features
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=for-the-badge&logo=vercel)](https://paymate-2-0.vercel.app)
+[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://console.firebase.google.com/project/paymate-2-prod)
+[![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs)](https://nextjs.org)
 
-- **Modern Authentication**: Secure and user-friendly signup and login flows.
-- **Interactive Dashboard**: A central hub to view account balance, recent activities, and initiate quick transfers.
-- **Versatile Money Transfers**:
-    - Send money via **UPI ID** or directly to a **Bank Account**.
-    - **QR Code Payments**: Scan QR codes using the device camera or upload an image to automate payment details.
-- **Bill Payments**: A dedicated section for paying various utility bills and recharges (e.g., mobile, electricity, gas).
-- **Comprehensive Transaction History**: A detailed, filterable, and searchable log of all past transactions.
-- **Multi-Gateway Payment Processing**: Integrated with major payment providers:
-    - **Stripe** for card payments.
-    - **PayPal** for international payments (with automatic INR to USD conversion).
-    - **Razorpay** for a wide range of payment methods.
-- **AI-Powered Modules**:
-    - **AI Support Chatbot**: An intelligent assistant to help users navigate the app and answer questions.
-    - **Smart Suggestions**: AI-driven recommendations for recurring payments and bills based on transaction history.
+---
+
+## ✨ Key Features
+
+### 🔐 Authentication & Security
+- **Clerk Authentication** — Full login, signup, MFA, OAuth (Google), and profile management via Clerk
+- **Route Protection** — Server-side middleware guards all authenticated routes
+- **Rate Limiting** — Upstash Redis-based rate limiting on login and payment endpoints
+- **Secure Sessions** — Clerk-managed JWT sessions with automatic idle timeout & forced logout
+- **AI Fraud Detection** — Genkit-powered fraud analysis blocks suspicious transactions in real time
+
+### 💳 Payments
+- **Multi-Gateway Support** — Stripe, PayPal, and Razorpay integrations
+- **Robust Payment Pipeline** — Queue-based payment processing with idempotency keys via Redis
+- **Transaction Tracking** — Real-time status tracking (PENDING → COMPLETED/FAILED) in Firestore
+- **Payment Reminders** — Dashboard widget for upcoming bills with one-click "Pay Now"
+- **QR Code Payments** — Scan via camera or upload QR image to auto-fill payment details
+
+### 🤖 AI-Powered Features
+- **Fraud Detection Engine** — Analyzes transaction amount, recipient history, and behavioral patterns using Gemini AI
+- **Smart Support Chatbot** — Context-aware AI assistant at `/support` that understands your transaction history
+- **Smart Suggestions** — AI-driven recommendations for recurring payments based on spending patterns
+- **Post-Failure Assistance** — Blocked/failed payments link directly to the AI chatbot with full context injected
+
+### 📊 Dashboard & History
+- **Live Transaction Feed** — Recent Activity widget pulls real data from Firestore (with demo seed fallback)
+- **Full Transaction History** — Searchable, filterable table with status badges and date formatting
+- **Financial Overview** — Balance display, monthly growth indicators, and quick-action cards
+
+### 🎨 Design
+- **Dark Mode First** — Signature purple-glow glassmorphism aesthetic throughout
+- **Responsive Layout** — Collapsible sidebar, mobile-optimized forms, and adaptive grids
+- **Themed Clerk UI** — Custom-styled authentication pages matching the app's visual identity
+- **Micro-animations** — Smooth transitions, hover effects, and loading states
+
+---
+
+## 🏗️ Architecture
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                        FRONTEND                              │
+│  Next.js App Router · React · TypeScript · ShadCN · Tailwind │
+│  Clerk <SignIn/> · <UserButton/> · useUser()                 │
+└──────────────────────┬───────────────────────────────────────┘
+                       │
+┌──────────────────────▼───────────────────────────────────────┐
+│                    MIDDLEWARE                                 │
+│  Clerk Auth Guard · Route Protection · Session Validation    │
+└──────────────────────┬───────────────────────────────────────┘
+                       │
+┌──────────────────────▼───────────────────────────────────────┐
+│                   API ROUTES                                 │
+│  /api/payments/initiate  → Idempotency + Fraud + Queue       │
+│  /api/user/transactions  → Firestore Query + Seed Fallback   │
+└────────┬─────────────┬───────────────────┬───────────────────┘
+         │             │                   │
+    ┌────▼────┐   ┌────▼────┐        ┌────▼────┐
+    │ Firebase │   │  Redis  │        │  Genkit │
+    │Firestore │   │ Upstash │        │ Gemini  │
+    │  Admin   │   │  Cache  │        │   AI    │
+    └─────────┘   └─────────┘        └─────────┘
+```
+
+---
 
 ## 🚀 Technology Stack
 
-| Category      | Technology                                                                                                  |
-|---------------|-------------------------------------------------------------------------------------------------------------|
-| **Frontend**  | **Next.js (App Router)**, **React**, **TypeScript**, **ShadCN UI**, **Tailwind CSS**, **Lucide React** (icons) |
-| **Backend**   | **Next.js API Routes**, **Firebase App Hosting**                                                            |
-| **AI/ML**     | **Genkit**, **Google AI (Gemini)**                                                                            |
-| **Payments**  | **Stripe**, **PayPal**, **Razorpay**                                                                        |
-| **Form Mgt.** | **React Hook Form** & **Zod**                                                                               |
+| Category | Technologies |
+|---|---|
+| **Frontend** | Next.js 15 (App Router), React, TypeScript, ShadCN UI, Tailwind CSS, Lucide Icons |
+| **Authentication** | Clerk (OAuth, MFA, Session Management, User Profiles) |
+| **Backend** | Next.js API Routes, Firebase Admin SDK |
+| **Database** | Cloud Firestore (transactions, user data) |
+| **Cache/Queue** | Upstash Redis (idempotency keys, rate limiting) |
+| **AI/ML** | Google Genkit, Gemini AI (fraud detection, chatbot, suggestions) |
+| **Payments** | Stripe, PayPal, Razorpay |
+| **Deployment** | Vercel (frontend), Firebase (backend services) |
+| **Forms** | React Hook Form, Zod validation |
 
 ---
 
 ## 🏁 Getting Started
 
-Follow these instructions to set up and run the project locally for development.
-
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/en) (v18 or later recommended)
-- [npm](https://www.npmjs.com/) or a compatible package manager
-- A code editor like [VS Code](https://code.visualstudio.com/)
+- [Node.js](https://nodejs.org/) v18+
+- [npm](https://www.npmjs.com/)
+- A [Clerk](https://dashboard.clerk.com) account
+- A [Firebase](https://console.firebase.google.com) project
 
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/your-username/paymate.git
-cd paymate
-```
-
-### 2. Install Dependencies
-
-Install all the required packages using npm:
+### 1. Clone & Install
 
 ```bash
+git clone https://github.com/KrishanuGharami/PayMate-2.0.git
+cd PayMate-2.0
 npm install
 ```
 
-### 3. Set Up Environment Variables
+### 2. Configure Environment Variables
 
-Create a new file named `.env` in the root of the project and add your API keys. You can use the `.env.example` file as a template.
+Create a `.env.local` file in the project root:
 
-```bash
-# Get your API key from the Google AI Studio
-# https://aistudio.google.com/app/apikey
-GEMINI_API_KEY=YOUR_GOOGLE_AI_API_KEY
+```env
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
+CLERK_SECRET_KEY=sk_test_xxxxx
 
-# Stripe API Keys (https://dashboard.stripe.com/test/apikeys)
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=YOUR_STRIPE_PUBLISHABLE_KEY
-STRIPE_SECRET_KEY=YOUR_STRIPE_SECRET_KEY
+# Clerk Routing
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/login
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/signup
 
-# PayPal API Keys (https://developer.paypal.com/dashboard/applications/sandbox)
-# Use 'test' for the public key if you don't have one
-NEXT_PUBLIC_PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID
+# Firebase Client SDK
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 
-# Razorpay API Keys (https://dashboard.razorpay.com/app/keys)
-NEXT_PUBLIC_RAZORPAY_KEY_ID=YOUR_RAZORPAY_KEY_ID
-RAZORPAY_KEY_SECRET=YOUR_RAZORPAY_SECRET_KEY
+# Firebase Admin SDK (server-side)
+FIREBASE_PROJECT_ID=your_project_id
+
+# Google AI (for Genkit flows)
+GEMINI_API_KEY=your_gemini_api_key
+
+# Upstash Redis (rate limiting & idempotency)
+UPSTASH_REDIS_REST_URL=your_redis_url
+UPSTASH_REDIS_REST_TOKEN=your_redis_token
+
+# Payment Gateways (mocked — optional for demo)
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_key
+STRIPE_SECRET_KEY=your_stripe_secret
+NEXT_PUBLIC_PAYPAL_CLIENT_ID=your_paypal_client_id
+NEXT_PUBLIC_RAZORPAY_KEY_ID=your_razorpay_key
+RAZORPAY_KEY_SECRET=your_razorpay_secret
 ```
-**Note:** The payment gateway integrations are currently mocked to work without real API keys. However, for the AI features to function, a valid `GEMINI_API_KEY` is required.
 
-### 4. Run the Development Servers
+### 3. Run the Development Server
 
-This project requires two development servers to be running simultaneously: one for the Next.js frontend and one for the Genkit AI backend.
-
-**Terminal 1: Start the Next.js App**
 ```bash
 npm run dev
 ```
-Your application will be running at `http://localhost:9002`.
 
-**Terminal 2: Start the Genkit AI Server**
-```bash
-npm run genkit:dev
-```
-This starts the Genkit server, which the Next.js app will call for AI-related tasks.
+Open [http://localhost:9002](http://localhost:9002) in your browser.
+
+---
 
 ## 📂 Project Structure
 
-The project follows a standard Next.js App Router structure with some key directories:
-
 ```
-src
-├── app/                  # Main application routes and pages
-│   ├── (app)/            # Authenticated user routes (dashboard, transfer, etc.)
-│   ├── login/            # Login page
-│   ├── signup/           # Signup page
-│   └── api/              # API routes for payment processing
-├── ai/                   # Genkit AI flows and configuration
-│   ├── flows/            # AI-powered feature definitions
-│   └── genkit.ts         # Genkit initialization
-├── components/           # Reusable React components
-│   ├── ui/               # ShadCN UI components
-│   └── payment-gateways/ # Components for Stripe, PayPal, Razorpay
-├── hooks/                # Custom React hooks (e.g., useToast)
-└── lib/                  # Utility functions
+src/
+├── app/
+│   ├── (app)/                    # Authenticated routes
+│   │   ├── dashboard/            # Home dashboard + widgets
+│   │   ├── transfer/             # Money transfer flows
+│   │   ├── bills/                # Bill payments
+│   │   ├── history/              # Transaction history table
+│   │   ├── support/              # AI chatbot support
+│   │   ├── payment/              # Payment processing page
+│   │   └── layout.tsx            # Auth layout with idle timeout
+│   ├── login/[[...sign-in]]/     # Clerk Sign-In page
+│   ├── signup/[[...sign-up]]/    # Clerk Sign-Up page
+│   ├── api/
+│   │   ├── payments/initiate/    # Robust payment endpoint
+│   │   ├── user/transactions/    # Transaction history API
+│   │   └── payment/              # Gateway-specific endpoints
+│   └── layout.tsx                # Root layout with ClerkProvider
+├── ai/
+│   ├── flows/                    # Genkit AI flow definitions
+│   │   ├── fraud-detection-flow.ts
+│   │   ├── ai-chatbot-support.ts
+│   │   └── smart-transaction-suggestions.ts
+│   └── genkit.ts                 # Genkit initialization
+├── components/
+│   ├── ui/                       # ShadCN UI components
+│   ├── payment-gateways/         # Stripe, PayPal, Razorpay
+│   └── app-sidebar.tsx           # Sidebar with Clerk UserButton
+├── lib/
+│   ├── auth.ts                   # Rate limiting utilities
+│   ├── clerk-theme.ts            # Clerk purple-glow theme
+│   ├── firebase.ts               # Firebase client (lazy init)
+│   ├── firebase-admin.ts         # Firebase Admin SDK
+│   └── redis.ts                  # Upstash Redis client
+├── hooks/                        # Custom React hooks
+└── middleware.ts                  # Clerk route protection
 ```
 
-## 🤖 AI Features Overview
+---
 
-PayMate 2.0 leverages **Genkit** and **Google Gemini** to provide intelligent features:
+## 🤖 AI Features Deep Dive
 
-1.  **AI Chatbot Support (`/support`)**: The `ai-chatbot-support.ts` flow defines a prompt that gives the Gemini model a persona as a helpful support agent for PayMate 2.0. The model is provided with a summary of the app's features and can guide users to the correct pages to perform actions.
+### Fraud Detection Engine
+The `/api/payments/initiate` endpoint runs every transaction through the Genkit `detectFraud` flow before processing. It:
+1. Queries the user's last 20 completed transactions from Firestore
+2. Calculates average spending and frequent recipients
+3. Sends the profile + current transaction to Gemini for risk analysis
+4. Blocks transactions with a risk score above threshold (HTTP 403)
 
-2.  **Smart Transaction Suggestions (Dashboard)**: The `smart-transaction-suggestions.ts` flow analyzes a user's (mock) transaction history and uses an AI prompt to generate personalized suggestions for future payments, such as recurring bills or frequent purchases.
+### Smart Support Chatbot
+The `/support` page features a context-aware AI assistant. When a user arrives from a failed/blocked payment, the chatbot automatically receives the transaction context (amount, recipient, failure reason) and provides personalized troubleshooting.
+
+### Smart Suggestions
+The dashboard's Smart Suggestions widget analyzes transaction patterns and uses Gemini to recommend upcoming payments, recurring bills, and savings opportunities.
+
+---
 
 ## ☁️ Deployment
 
-This application is pre-configured for deployment on **Firebase App Hosting**. The `apphosting.yaml` file at the root of the project contains the necessary configuration for a seamless deployment experience.
+### Vercel (Recommended)
 
-## Conclusion
+1. Push to GitHub
+2. Import the repo in [Vercel](https://vercel.com)
+3. Add all environment variables from `.env.local` to Vercel's project settings
+4. Deploy — Vercel auto-detects Next.js and builds accordingly
 
-This project focused on the development of an AI-enhanced digital payment platform designed to offer a secure, intuitive, and intelligent user experience. With the growing expectation for smarter financial tools, a system that combines versatile payment options with robust AI assistance provides significant value.
+### Firebase Services
 
-The solution uses a modern web stack to deliver a seamless payment experience, including transfers via UPI, bank accounts, and QR codes. A key feature is the integration of an AI assistant powered by **Google's Genkit framework and the Gemini model**. This allows users to receive instant support through a natural language chatbot and get personalized payment suggestions based on their transaction history, making financial management more accessible and efficient.
+```bash
+# Deploy Firestore rules and indexes
+firebase deploy --only firestore
+```
 
-From a development perspective, the system employs:
-*   **Frontend:** Next.js with Tailwind CSS and ShadCN UI for a responsive, modern interface.
-*   **Backend:** Next.js API Routes for handling server-side logic and payment processing.
-*   **Database:** LocalStorage is used to mock user data persistence for this prototype.
-*   **AI Layer:** Genkit orchestrates interactions with the Google Gemini model for all intelligent features.
+---
 
-The **Conversational Agile** development model was followed, enabling rapid prototyping, flexibility, and feedback-driven improvements throughout the project lifecycle.
+## 🔒 Security Architecture
 
-**Key Outcomes:**
-*   A fully-featured (mocked) payment system supporting multiple gateways.
-*   A helpful, real-time AI chatbot for user support and navigation.
-*   Personalized, AI-driven transaction suggestions to enhance user experience.
-*   A scalable, responsive, and accessible web-based platform.
+| Layer | Implementation |
+|---|---|
+| **Authentication** | Clerk (OAuth, Email/Password, MFA) |
+| **Route Protection** | Clerk middleware on all `/dashboard/*` routes |
+| **API Security** | `auth()` from `@clerk/nextjs/server` on every API route |
+| **Rate Limiting** | Upstash Redis — 5 req/10s (auth), 3 req/60s (payments) |
+| **Idempotency** | Redis-backed UUID keys prevent duplicate transactions |
+| **Fraud Detection** | AI-powered real-time analysis before payment processing |
+| **Session Timeout** | 5-minute idle timer with warning dialog |
+| **Data Validation** | Zod schemas on all API inputs |
+
+---
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+---
+
+<p align="center">
+  Built with ❤️ by <a href="https://github.com/KrishanuGharami">Krishanu Gharami</a>
+</p>
