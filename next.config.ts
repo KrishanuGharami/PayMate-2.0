@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  serverExternalPackages: ['firebase-admin', 'firebase', '@genkit-ai/firebase'],
   images: {
     remotePatterns: [
       {
@@ -31,3 +32,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
