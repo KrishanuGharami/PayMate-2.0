@@ -59,8 +59,7 @@ const CheckoutForm = ({ amount, onInitiatePayment, onSuccess, onError }: Checkou
             body: JSON.stringify({ 
                 amount: amount / 100, // Endpoint expects normal value, not cents
                 recipient: 'mock_recipient_from_stripe',
-                idempotencyKey,
-                userId: 'user_123' // Mock user ID for now
+                idempotencyKey
             }),
         });
 

@@ -3,16 +3,30 @@ import { adminDb } from '@/lib/firebase-admin';
 import { redis } from '@/lib/redis';
 import { z } from 'zod';
 import { detectFraud } from '@/ai/flows/fraud-detection-flow';
+import { paymentRateLimit, getSession } from '@/lib/auth';
 
 const paymentSchema = z.object({
   amount: z.number().positive(),
   recipient: z.string(),
-  idempotencyKey: z.string().uuid(),
-  userId: z.string()
+  idempotencyKey: z.string().uuid()
 });
 
 export async function POST(request: Request) {
   try {
+    // 1. Session Verification
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 });
+    }
+    const { userId } = session;
+
+    // 2. Rate Limiting
+    const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
+    const { success } = await paymentRateLimit.limit(`payment_${userId}_${ip}`);
+    if (!success) {
+      return NextResponse.json({ error: 'Too many payment requests. Please slow down.' }, { status: 429 });
+    }
+
     const body = await request.json();
     const result = paymentSchema.safeParse(body);
     
@@ -20,9 +34,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid payload', details: result.error.errors }, { status: 400 });
     }
 
-    const { amount, recipient, idempotencyKey, userId } = result.data;
+    const { amount, recipient, idempotencyKey } = result.data;
 
-    // 1. Idempotency Check using Redis
+    // 3. Idempotency Check using Redis
     // If the key exists, it means we already processed or are processing this request
     const existingTransaction = await redis.get(`tx_${idempotencyKey}`);
     if (existingTransaction) {

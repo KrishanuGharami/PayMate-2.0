@@ -61,49 +61,56 @@ export default function LoginPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    const storedUser = localStorage.getItem('user');
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      });
 
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      if (
-        user.email === values.email &&
-        user.password === values.password
-      ) {
-        // Instead of logging in directly, open MFA dialog
+      const data = await response.json();
+
+      if (response.status === 429) {
+        toast({ title: 'Too Many Attempts', description: data.error, variant: 'destructive' });
+        return;
+      }
+
+      if (!response.ok) {
+        toast({ title: 'Login Failed', description: data.error, variant: 'destructive' });
+        return;
+      }
+
+      if (data.requiresMfa) {
         setIsMfaOpen(true);
       } else {
-        toast({
-          title: 'Invalid Credentials',
-          description: 'Please check your email and password.',
-          variant: 'destructive',
-        });
+        router.push('/dashboard');
       }
-    } else {
-      toast({
-        title: 'No User Found',
-        description: 'Please sign up to create an account.',
-        variant: 'destructive',
-      });
+    } catch (error) {
+       toast({ title: 'Error', description: 'Network error occurred.', variant: 'destructive' });
     }
   }
 
-  function handleVerifyOtp() {
-    // For this prototype, we'll use a hardcoded OTP.
-    if (otpValue === '123456') {
-      toast({
-        title: 'Login Successful',
-        description: 'Welcome back!',
-        variant: 'success'
-      });
-      setIsMfaOpen(false);
-      router.push('/dashboard');
-    } else {
-      toast({
-        title: 'Invalid OTP',
-        description: 'The one-time password you entered is incorrect.',
-        variant: 'destructive',
-      });
+  async function handleVerifyOtp() {
+    try {
+        const values = form.getValues();
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...values, otp: otpValue }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            toast({ title: 'Login Successful', description: 'Welcome back!', variant: 'success' });
+            setIsMfaOpen(false);
+            router.push('/dashboard');
+        } else {
+            toast({ title: 'Verification Failed', description: data.error, variant: 'destructive' });
+        }
+    } catch (error) {
+        toast({ title: 'Error', description: 'Network error occurred.', variant: 'destructive' });
     }
   }
 
