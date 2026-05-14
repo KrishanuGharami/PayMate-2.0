@@ -1,6 +1,6 @@
 # PayMate 2.0 - AI-Enhanced Digital Payment Platform
 
-![PayMate 2.0 Banner](https://placehold.co/1200x400.png)
+![PayMate Banner](https://github.com/user-attachments/assets/a9933391-fd54-4f54-b910-e30790473ac6)
 
 **PayMate 2.0** is a feature-rich, full-stack web application prototype for a modern digital payment platform. Built with Next.js, ShadCN UI, and Google's Genkit, it provides a seamless and secure user experience for managing financial transactions. The application integrates advanced AI capabilities, including a conversational support chatbot and smart transaction suggestions, to deliver an intelligent and intuitive payment solution.
 
